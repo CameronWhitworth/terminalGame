@@ -8,6 +8,7 @@ public class Directory
     public List<string> files;
     public Directory parent;
     public bool isUserCreated;
+    private Dictionary<string, string> fileContents;
 
     public Directory(string name, Directory parent = null, bool isUserCreated = false)
     {
@@ -16,6 +17,7 @@ public class Directory
         this.files = new List<string>();
         this.parent = parent;
         this.isUserCreated = isUserCreated;
+        this.fileContents = new Dictionary<string, string>();
     }
 
     // Add a new subdirectory
@@ -86,5 +88,54 @@ public class Directory
         }
     }
 
-    // Additional methods for directory management...
+    public string CreateFile(string fileName)
+    {
+        // Append .txt if not present, this way is a user adds .txt themself it will be ignored
+        if (!fileName.EndsWith(".txt"))
+        {
+            fileName += ".txt";
+        }
+
+        if (files.Contains(fileName))
+        {
+            return "File already exists: " + fileName;
+        }
+        else
+        {
+            files.Add(fileName);
+            fileContents[fileName] = "testing"; // Initialize with empty content
+            return "File created: " + fileName;
+        }
+    }
+
+    // Method to read a file
+    public string ReadFile(string fileName)
+    {
+        if (files.Contains(fileName))
+        {
+            return fileContents[fileName];
+        }
+        else
+        {
+            return "File not found: " + fileName;
+        }
+    }
+
+    // Method to delete a file
+    public string DeleteFile(string fileName)
+    {
+        // Check if the file exists
+        if (files.Contains(fileName))
+        {
+            files.Remove(fileName);
+            fileContents.Remove(fileName); // Remove file content if stored
+            return "File deleted: " + fileName;
+        }
+        else
+        {
+            return "File not found: " + fileName;
+        }
+    }
+
+    
 }

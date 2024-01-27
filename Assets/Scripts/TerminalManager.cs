@@ -13,6 +13,8 @@ public class TerminalManager : MonoBehaviour
     public ScrollRect sr;
     public GameObject msgList;
     private Directory currentDirectory;
+    private List<string> commandHistory = new List<string>();
+    private int historyIndex = 0;
 
 
 
@@ -34,6 +36,9 @@ public class TerminalManager : MonoBehaviour
         if(terminalInput.isFocused && terminalInput.text != "" && Input.GetKeyDown(KeyCode.Return))
         {
 
+            // Store command in history and reset history index to the end
+            commandHistory.Add(terminalInput.text);
+            historyIndex = commandHistory.Count;
 
             //Store user input
             string userInput = terminalInput.text;
@@ -54,6 +59,36 @@ public class TerminalManager : MonoBehaviour
             //Refucus the input feild
             terminalInput.ActivateInputField();
             terminalInput.Select();
+        }
+    }
+
+    void Update()
+    {
+        if (terminalInput.isFocused)
+        {
+            if (Input.GetKeyDown(KeyCode.UpArrow))
+            {
+                if (historyIndex > 0)
+                {
+                    historyIndex--;
+                    terminalInput.text = commandHistory[historyIndex];
+                    terminalInput.MoveTextEnd(false);
+                }
+            }
+            else if (Input.GetKeyDown(KeyCode.DownArrow))
+            {
+                if (historyIndex < commandHistory.Count - 1)
+                {
+                    historyIndex++;
+                    terminalInput.text = commandHistory[historyIndex];
+                    terminalInput.MoveTextEnd(false);
+                }
+                else if (historyIndex == commandHistory.Count - 1)
+                {
+                    historyIndex++;
+                    terminalInput.text = ""; // Clear input field at the end of history
+                }
+            }
         }
     }
 

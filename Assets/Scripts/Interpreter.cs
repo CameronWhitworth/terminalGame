@@ -111,6 +111,66 @@ public class Interpreter : MonoBehaviour
             }
             return response;
         }
+
+        if (args[0] == "rm")
+        {
+            string fileResponse = "";
+            if (args.Length > 1)
+            {
+                string fileName = args[1];
+                // Ensure .txt extension for deletion
+                if (!fileName.EndsWith(".txt"))
+                {
+                    fileName += ".txt";
+                }
+
+                fileResponse = terminalManager.GetCurrentDirectory().DeleteFile(fileName);
+                response.Add(fileResponse);
+            }
+            else
+            {
+                response.Add("ERROR: File name not specified");
+            }
+            return response;
+        }
+
+        //Create text file
+        if (args[0] == "touch")
+        {
+            string fileResponse = "";
+            if (args.Length > 1)
+            {
+                fileResponse = terminalManager.GetCurrentDirectory().CreateFile(args[1]);
+                response.Add(fileResponse);
+            }
+            else
+            {
+                response.Add("ERROR: File name not specified");
+            }
+            return response;
+        }
+        //open text file
+        if (args[0] == "cat" || args[0] == "open")
+        {
+            string fileResponse = "";
+            if (args.Length > 1)
+            {
+                string fileName = args[1];
+                // Ensure .txt extension for reading
+                if (!fileName.EndsWith(".txt"))
+                {
+                    fileName += ".txt";
+                }
+
+                fileResponse = terminalManager.GetCurrentDirectory().ReadFile(fileName);
+                response.Add(fileResponse);
+            }
+            else
+            {
+                response.Add("ERROR: File name not specified");
+            }
+            return response;
+        }
         else
         {
             response.Add("ERROR Unknown command, Type 'help' for a list of commands");
