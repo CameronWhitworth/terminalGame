@@ -68,6 +68,7 @@ public class TerminalManager : MonoBehaviour
         {
             if (Input.GetKeyDown(KeyCode.UpArrow))
             {
+                terminalInput.MoveTextEnd(false);
                 if (historyIndex > 0)
                 {
                     historyIndex--;
@@ -77,6 +78,7 @@ public class TerminalManager : MonoBehaviour
             }
             else if (Input.GetKeyDown(KeyCode.DownArrow))
             {
+                terminalInput.MoveTextEnd(false);
                 if (historyIndex < commandHistory.Count - 1)
                 {
                     historyIndex++;
@@ -220,4 +222,22 @@ public class TerminalManager : MonoBehaviour
     {
         return currentDirectory;
     }
+
+    //TODO: Finsih this shit, it doesn't work but I dont care it's just a silly little option
+    public void ChangeTextSize(int newSize)
+    {
+        foreach (Transform child in msgList.transform)
+        {
+            Text textComponent = child.GetComponent<Text>();
+            if (textComponent != null)
+            {
+                textComponent.fontSize = newSize;
+            }
+        }
+
+        // Force the canvas to update
+        Canvas.ForceUpdateCanvases();
+    }
+
+
 }

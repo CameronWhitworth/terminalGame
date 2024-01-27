@@ -171,6 +171,26 @@ public class Interpreter : MonoBehaviour
             }
             return response;
         }
+        if (args[0] == "system")
+        {
+            if (args.Length >= 3 && args[1] == "--set" && args[2] == "fontsize")
+            {
+                if (args.Length == 4 && int.TryParse(args[3], out int textSize))
+                {
+                    terminalManager.ChangeTextSize(textSize);
+                    response.Add($"Text size set to {textSize}");
+                }
+                else
+                {
+                    response.Add("ERROR: Invalid text size");
+                }
+            }
+            else
+            {
+                response.Add("ERROR: Invalid option command");
+            }
+            return response;
+        }
         else
         {
             response.Add("ERROR Unknown command, Type 'help' for a list of commands");
