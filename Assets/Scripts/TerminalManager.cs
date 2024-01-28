@@ -2,12 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
+using System.Linq;
 
-public class TerminalManager : MonoBehaviour
+public class TerminalManager : MonoBehaviour, IPointerClickHandler
 {
     public GameObject directoryLine;
     public GameObject responceLine;
-
     public InputField terminalInput;
     public GameObject userInputLine;
     public ScrollRect sr;
@@ -15,88 +16,136 @@ public class TerminalManager : MonoBehaviour
     private Directory currentDirectory;
     private List<string> commandHistory = new List<string>();
     private int historyIndex = 0;
-
-
+    private int autocompleteIndex = -1;
+    private List<string> autocompleteOptions = new List<string>();
 
     Interpreter interpreter;
+
     private void Start()
     {
         interpreter = GetComponent<Interpreter>();
-
-        // Correctly build file structure
         currentDirectory = Directory.InitializeFileSystem();
-
         terminalInput.ActivateInputField();
         terminalInput.Select();
     }
 
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        terminalInput.ActivateInputField();
+        terminalInput.Select();
+    }
 
     private void OnGUI()
     {
-        if(terminalInput.isFocused && terminalInput.text != "" && Input.GetKeyDown(KeyCode.Return))
+        if (terminalInput.isFocused && terminalInput.text != "" && Input.GetKeyDown(KeyCode.Return))
         {
-
-            // Store command in history and reset history index to the end
-            commandHistory.Add(terminalInput.text);
-            historyIndex = commandHistory.Count;
-
-            //Store user input
-            string userInput = terminalInput.text;
-
-            ClearInputFeild();
-
-            AddDirectoryLine(userInput);
-
-            //Add interpreter/response line
-            int lines = AddInterpreterLines(interpreter.Interpret(userInput));
-
-            //Scroll to bottom
-            ScrollToBottom(lines);
-
-            //Move user input to the end
-            userInputLine.transform.SetAsLastSibling();
-
-            //Refucus the input feild
-            terminalInput.ActivateInputField();
-            terminalInput.Select();
+            ExecuteInput(terminalInput.text);
         }
+    }
+
+    private void ExecuteInput(string input)
+    {
+        // Store command in history and reset history index to the end
+        commandHistory.Add(input);
+        historyIndex = commandHistory.Count;
+
+        ClearInputField();
+
+        AddDirectoryLine(input);
+
+        // Add interpreter/response line
+        int lines = AddInterpreterLines(interpreter.Interpret(input));
+
+        // Scroll to bottom
+        ScrollToBottom(lines);
+
+        // Move user input to the end
+        userInputLine.transform.SetAsLastSibling();
+
+        // Refocus the input field
+        terminalInput.ActivateInputField();
+        terminalInput.Select();
     }
 
     void Update()
     {
         if (terminalInput.isFocused)
         {
-            if (Input.GetKeyDown(KeyCode.UpArrow))
+            HandleCommandHistory();
+
+            if (Input.GetKeyDown(KeyCode.Tab))
             {
-                terminalInput.MoveTextEnd(false);
-                if (historyIndex > 0)
-                {
-                    historyIndex--;
-                    terminalInput.text = commandHistory[historyIndex];
-                    terminalInput.MoveTextEnd(false);
-                }
+                AutocompleteInput(terminalInput.text);
             }
-            else if (Input.GetKeyDown(KeyCode.DownArrow))
+
+            // If user starts typing, clear the autocomplete options
+            if (Input.anyKeyDown && !Input.GetKeyDown(KeyCode.Tab) && !Input.GetKeyDown(KeyCode.UpArrow) && !Input.GetKeyDown(KeyCode.DownArrow))
             {
-                terminalInput.MoveTextEnd(false);
-                if (historyIndex < commandHistory.Count - 1)
-                {
-                    historyIndex++;
-                    terminalInput.text = commandHistory[historyIndex];
-                    terminalInput.MoveTextEnd(false);
-                }
-                else if (historyIndex == commandHistory.Count - 1)
-                {
-                    historyIndex++;
-                    terminalInput.text = ""; // Clear input field at the end of history
-                }
+                autocompleteOptions.Clear();
+                autocompleteIndex = -1;
             }
         }
     }
 
-    void ClearInputFeild()
+    private void HandleCommandHistory()
+    {
+        if (Input.GetKeyDown(KeyCode.UpArrow))
+        {
+            historyIndex = Mathf.Clamp(historyIndex - 1, 0, commandHistory.Count);
+            terminalInput.text = historyIndex < commandHistory.Count ? commandHistory[historyIndex] : "";
+        }
+        else if (Input.GetKeyDown(KeyCode.DownArrow))
+        {
+            historyIndex = Mathf.Clamp(historyIndex + 1, 0, commandHistory.Count);
+            terminalInput.text = historyIndex < commandHistory.Count ? commandHistory[historyIndex] : "";
+        }
+    }
+
+    private void AutocompleteInput(string input)
+    {
+        // Split the input into parts to identify the last word for completion
+        var parts = input.Split(' ');
+        var lastWord = parts.LastOrDefault();
+        var basePath = string.Join(" ", parts.Take(parts.Length - 1));
+
+        // Check if the last word has changed since the last autocomplete operation
+        if (autocompleteIndex < 0 || !autocompleteOptions[autocompleteIndex].EndsWith(lastWord))
+        {
+            // Populate or repopulate the autocomplete options based on the last word
+            autocompleteOptions = currentDirectory.subDirectories.Select(d => d.name + "/")
+                .Concat(currentDirectory.files)
+                .Where(name => name.StartsWith(lastWord))
+                .ToList();
+
+            // If the last word is empty (i.e., the user has just typed a space), include all options
+            if (string.IsNullOrEmpty(lastWord))
+            {
+                autocompleteOptions = autocompleteOptions.Concat(currentDirectory.subDirectories.Select(d => d.name + "/"))
+                    .Concat(currentDirectory.files)
+                    .ToList();
+            }
+
+            // Reset the autocomplete index
+            autocompleteIndex = -1;
+        }
+
+        // Cycle through the autocomplete options if any are available
+        if (autocompleteOptions.Count > 0)
+        {
+            autocompleteIndex = (autocompleteIndex + 1) % autocompleteOptions.Count;
+            // Append the last part to the base path only if there is a base path
+            terminalInput.text = (basePath.Length > 0 ? basePath + " " : "") + autocompleteOptions[autocompleteIndex];
+            terminalInput.caretPosition = terminalInput.text.Length; // Move the caret to the end
+        }
+    }
+
+
+
+
+    void ClearInputField()
     {
         terminalInput.text = "";
+        autocompleteOptions.Clear();
     }
 
     public void ClearScreen()
