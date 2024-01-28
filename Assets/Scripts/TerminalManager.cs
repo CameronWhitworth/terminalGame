@@ -93,11 +93,13 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
         {
             historyIndex = Mathf.Clamp(historyIndex - 1, 0, commandHistory.Count);
             terminalInput.text = historyIndex < commandHistory.Count ? commandHistory[historyIndex] : "";
+            terminalInput.MoveTextEnd(false);
         }
         else if (Input.GetKeyDown(KeyCode.DownArrow))
         {
             historyIndex = Mathf.Clamp(historyIndex + 1, 0, commandHistory.Count);
             terminalInput.text = historyIndex < commandHistory.Count ? commandHistory[historyIndex] : "";
+            terminalInput.MoveTextEnd(false);
         }
     }
 

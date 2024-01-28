@@ -73,6 +73,10 @@ public class Interpreter : MonoBehaviour
             string dirResponse = "";
             if (args.Length > 1)
             {
+                if (args[1].EndsWith("/"))
+                {
+                    args[1] = args[1].Substring(0, args[1].Length - 1);
+                }
                 terminalManager.ChangeDirectory(args[1], out dirResponse);
                 response.Add(dirResponse);
             }
@@ -87,6 +91,10 @@ public class Interpreter : MonoBehaviour
             string dirResponse = "";
             if (args.Length > 1)
             {
+                if (args[1].EndsWith("/"))
+                {
+                    args[1] = args[1].Substring(0, args[1].Length - 1);
+                }
                 dirResponse = terminalManager.GetCurrentDirectory().CreateSubDirectory(args[1]);
                 response.Add(dirResponse);
             }
@@ -101,6 +109,10 @@ public class Interpreter : MonoBehaviour
             string dirResponse = "";
             if (args.Length > 1)
             {
+                if (args[1].EndsWith("/"))
+                {
+                    args[1] = args[1].Substring(0, args[1].Length - 1);
+                }
                 dirResponse = terminalManager.GetCurrentDirectory().DeleteSubDirectory(args[1]);
                 response.Add(dirResponse);
             }
