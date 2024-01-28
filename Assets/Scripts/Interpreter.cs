@@ -17,7 +17,6 @@ public class Interpreter : MonoBehaviour
     private void Start()
     {
         terminalManager = FindObjectOfType<TerminalManager>();
-        // terminalManager = GetComponent<TerminalManager>();
     }
 
 
