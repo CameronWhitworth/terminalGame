@@ -366,7 +366,7 @@ MonoBehaviour:
   terminalInput: {fileID: 1077786500}
   userInputLine: {fileID: 595969237}
   editorUI: {fileID: 1513362306}
-  commandLineUI: {fileID: 1114317625}
+  commandLineUI: {fileID: 1961106303}
   sr: {fileID: 292530107}
   msgList: {fileID: 1961106303}
   editorInputField: {fileID: 1513362307}
@@ -1417,7 +1417,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: -1.449211, y: 4.856}
+  m_AnchoredPosition: {x: -1.449211, y: 3.281}
   m_SizeDelta: {x: 1050, y: 40}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1114317627
@@ -1576,7 +1576,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.40214103, g: 0.7075472, b: 0.2770114, a: 1}
+  m_Color: {r: 0.7924528, g: 0.14578153, b: 0.14578143, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -2021,8 +2021,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -1.449211, y: 5.61}
-  m_SizeDelta: {x: 1050, y: 200}
+  m_AnchoredPosition: {x: -1.4492111, y: 4.735}
+  m_SizeDelta: {x: 1050, y: 550}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1513362309
 MonoBehaviour:
