@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using System.IO;
 
@@ -27,6 +28,51 @@ public class Interpreter : MonoBehaviour
 
         string[] args = userInput.Split();
 
+        //This is for customer user aliasCommands
+        if (terminalManager.GetCurrentDirectory().aliases.TryGetValue(args[0], out string aliasCommand))
+        {
+            userInput = aliasCommand + userInput.Substring(args[0].Length);
+            args = userInput.Split();
+        }
+
+        if (args[0] == "alias")
+        {
+            if (args.Length >= 2 && (args[1] == "-l" || args[1] == "--list"))
+            {
+                return terminalManager.GetCurrentDirectory().ListAllAliases();
+            }
+            else
+            {
+                // Find the position of the first '=' character
+                int equalSignIndex = userInput.IndexOf('=');
+                if (equalSignIndex > 0)
+                {
+                    // Extract alias name (trim to remove any leading/trailing whitespaces)
+                    string aliasName = userInput.Substring(5, equalSignIndex - 5).Trim();
+                    // Extract command, ensuring it's a different variable name if there was a conflict
+                    string extractedCommand = userInput.Substring(equalSignIndex + 1).Trim();
+
+                    // Validate the command is enclosed in single quotes
+                    if (extractedCommand.StartsWith("'") && extractedCommand.EndsWith("'"))
+                    {
+                        extractedCommand = extractedCommand[1..^1]; // Remove the single quotes
+                        string aliasResponse = terminalManager.GetCurrentDirectory().AddAlias(aliasName, extractedCommand);
+                        response.Add(aliasResponse);
+                    }
+                    else
+                    {
+                        response.Add("ERROR: Alias command must be enclosed in single quotes");
+                    }
+                }
+                else
+                {
+                    response.Add("Usage: alias [alias_name] = '[command]'");
+                }
+
+                return response;
+            }
+        }
+
         if(args[0] == "help")
         {
             ColorListEntry("help", "returns a list of commands");
@@ -35,6 +81,8 @@ public class Interpreter : MonoBehaviour
             ColorListEntry("ls", "list contents of directory");
             ColorListEntry("cd", "cd followed by the file directory name to enter");
             ColorListEntry("cd ..", "to go back a folder");
+            ColorListEntry("alias <custom name>='<command>'", "creates a new alias for a command");
+            ColorListEntry("alias -l or alias --list", "lists all defined aliases");
             ColorListEntry("//", "force back to root from anywhere");
             return response;
         }

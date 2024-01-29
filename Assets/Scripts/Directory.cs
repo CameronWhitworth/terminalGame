@@ -10,6 +10,7 @@ public class Directory
     public bool isUserCreated;
     private Dictionary<string, string> fileContents;
 
+    public Dictionary<string, string> aliases = new Dictionary<string, string>();
     public Directory(string name, Directory parent = null, bool isUserCreated = false)
     {
         this.name = name;
@@ -137,5 +138,77 @@ public class Directory
         }
     }
 
+    public string AddAlias(string aliasName, string command)
+    {
+        if (string.IsNullOrWhiteSpace(aliasName) || string.IsNullOrWhiteSpace(command))
+        {
+            return "Invalid alias or command";
+        }
+
+        // Check if the alias conflicts with existing commands
+        if (IsCommand(aliasName))
+        {
+            return $"Cannot create alias '{aliasName}': conflicts with an existing command";
+        }
+
+        // Check if the alias already exists
+        if (aliases.ContainsKey(aliasName))
+        {
+            return $"Alias '{aliasName}' already exists";
+        }
+
+        // Check for recursive aliases
+        if (IsRecursiveAlias(aliasName, command))
+        {
+            return $"Cannot create alias '{aliasName}': recursive alias detected";
+        }
+
+        aliases[aliasName] = command;
+        return $"Alias '{aliasName}' created for command '{command}'";
+    }
+
+    private bool IsCommand(string aliasName)
+    {
+        // Replace this with a dict of command stored in a file (This is dog shit but I cba for now)
+        var existingCommands = new HashSet<string> { "help", "ls", "cd", "mkdir", "rmdir", "touch", "cat", "system", "alias", "clear", "ascii", "boop" }; //PLACEHOLDER!!!!!!!!!
+        return existingCommands.Contains(aliasName);
+    }
+
+    private bool IsRecursiveAlias(string aliasName, string command)
+    {
+        // Check if the command starts with the alias itself
+        string[] commandParts = command.Split();
+        if (commandParts.Length > 0)
+        {
+            if (commandParts[0] == aliasName)
+            {
+                return true; // Direct recursion
+            }
+
+            if (aliases.TryGetValue(commandParts[0], out string existingCommand))
+            {
+                return IsRecursiveAlias(aliasName, existingCommand); // Check for indirect recursion
+            }
+        }
+
+        return false;
+    }
+
+    public List<string> ListAllAliases()
+    {
+        List<string> aliasList = new List<string>();
+
+        foreach (var alias in aliases)
+        {
+            aliasList.Add($"{alias.Key} -> {alias.Value}");
+        }
+
+        if (aliasList.Count == 0)
+        {
+            aliasList.Add("No aliases defined.");
+        }
+
+        return aliasList;
+    }
     
 }

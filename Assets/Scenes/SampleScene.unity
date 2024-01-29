@@ -2267,6 +2267,10 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6657824937673819010, guid: 001d24acf510e0146b5e9c82d423909b, type: 3}
+      propertyPath: m_FontData.m_HorizontalOverflow
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8087774739112095605, guid: 001d24acf510e0146b5e9c82d423909b, type: 3}
       propertyPath: m_Name
       value: SampleResponceLine
@@ -2394,6 +2398,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3986458905950910309, guid: ee50a13b1f0f27e4faa6c7c43d158276, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6413556951389225871, guid: ee50a13b1f0f27e4faa6c7c43d158276, type: 3}
+      propertyPath: m_FontData.m_HorizontalOverflow
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6869866283465687493, guid: ee50a13b1f0f27e4faa6c7c43d158276, type: 3}
