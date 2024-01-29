@@ -90,13 +90,16 @@ public class Interpreter : MonoBehaviour
         if(args[0] == "help")
         {
             ColorListEntry("help", "returns a list of commands");
-            ColorListEntry("ascii", "makes pretty art art");
+            ColorListEntry("ascii", "makes pretty art");
             ColorListEntry("clear", "clears screen");
-            ColorListEntry("", "");
             ColorListEntry("ls", "list contents of directory");
             ColorListEntry("cd <directory/folder>", "cd followed by the directory name to enter it");
             ColorListEntry("cd ..", "to go back a folder");
             ColorListEntry("cd root", "force back to root from anywhere");
+            ColorListEntry("", "");
+            ColorListEntry("touch <filename>", "creates a new text file");
+            ColorListEntry("cat / open <filename>", "opens text file");
+            ColorListEntry("edit <filename>", "opens file in text editor");
             ColorListEntry("", "");
             ColorListEntry("alias <custom name>='<command>'", "creates a new alias for a command");
             ColorListEntry("alias -l or alias --list", "lists all defined aliases");
@@ -112,6 +115,12 @@ public class Interpreter : MonoBehaviour
         if(args[0] == "ascii")
         {
             LoadTitle("test.txt", "red", 2);
+            return response;
+        }
+        if (args[0] == "echo")
+        {
+            string echoedText = string.Join(" ", args.Skip(1));
+            response.Add(echoedText);
             return response;
         }
         if (args[0] == "clear")
