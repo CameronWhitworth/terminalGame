@@ -170,7 +170,7 @@ public class Directory
     private bool IsCommand(string aliasName)
     {
         // Replace this with a dict of command stored in a file (This is dog shit but I cba for now)
-        var existingCommands = new HashSet<string> { "help", "ls", "cd", "mkdir", "rmdir", "touch", "cat", "system", "alias", "clear", "ascii", "boop" }; //PLACEHOLDER!!!!!!!!!
+        var existingCommands = new HashSet<string> { "help", "ls", "cd", "mkdir", "rmdir", "touch", "cat", "system", "alias", "clear", "ascii", "boop", "-r", "-l" }; //PLACEHOLDER!!!!!!!!!
         return existingCommands.Contains(aliasName);
     }
 
@@ -210,5 +210,22 @@ public class Directory
 
         return aliasList;
     }
+
+    public string RemoveAlias(string aliasName)
+    {
+        if (string.IsNullOrWhiteSpace(aliasName))
+        {
+            return "Invalid alias name";
+        }
+
+        if (!aliases.ContainsKey(aliasName))
+        {
+            return $"Alias '{aliasName}' does not exist";
+        }
+
+        aliases.Remove(aliasName);
+        return $"Alias '{aliasName}' removed successfully";
+    }
+
     
 }

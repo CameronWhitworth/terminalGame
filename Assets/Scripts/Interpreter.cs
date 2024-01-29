@@ -41,6 +41,20 @@ public class Interpreter : MonoBehaviour
             {
                 return terminalManager.GetCurrentDirectory().ListAllAliases();
             }
+            else if (args.Length >= 2 && (args[1] == "-r" || args[1] == "--remove"))
+            {
+                if (args.Length == 3)
+                {
+                    string aliasResponse = terminalManager.GetCurrentDirectory().RemoveAlias(args[2]);
+                    response.Add(aliasResponse);
+                }
+                else
+                {
+                    response.Add("Usage: alias -r [alias_name]");
+                }
+
+                return response;
+            }
             else
             {
                 // Find the position of the first '=' character
@@ -78,12 +92,16 @@ public class Interpreter : MonoBehaviour
             ColorListEntry("help", "returns a list of commands");
             ColorListEntry("ascii", "makes pretty art art");
             ColorListEntry("clear", "clears screen");
+            ColorListEntry("", "");
             ColorListEntry("ls", "list contents of directory");
-            ColorListEntry("cd", "cd followed by the file directory name to enter");
+            ColorListEntry("cd <directory/folder>", "cd followed by the directory name to enter it");
             ColorListEntry("cd ..", "to go back a folder");
+            ColorListEntry("cd root", "force back to root from anywhere");
+            ColorListEntry("", "");
             ColorListEntry("alias <custom name>='<command>'", "creates a new alias for a command");
             ColorListEntry("alias -l or alias --list", "lists all defined aliases");
-            ColorListEntry("//", "force back to root from anywhere");
+            ColorListEntry("alias -r <alias>", "Removes an alias. Syntax: alias -r [alias_name]");
+            
             return response;
         }
         if(args[0] == "boop")
