@@ -239,11 +239,34 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
     public void ChangeDirectory(string directoryName, out string dirResponse)
     {
         dirResponse = "";
-        if (directoryName == ".." && currentDirectory.parent != null) 
+
+        // Check if the input is 'cd /' to go back to the root
+        if (directoryName == "root")
         {
-            // Go back to the parent directory
-            currentDirectory = currentDirectory.parent;
-            dirResponse = "Changed directory to " + currentDirectory; //TODO: Make display correct name
+            // Set currentDirectory to the root
+            currentDirectory = FindRootDirectory();
+            dirResponse = "Changed directory to root";
+        }
+        else if (directoryName == "..")
+        {
+            if (currentDirectory.parent != null)
+            {
+                // Go back to the parent directory
+                currentDirectory = currentDirectory.parent;
+                dirResponse = "Changed directory to " + currentDirectory.name;
+            }
+            else
+            {
+                dirResponse = "Current directory has no parent";
+            }
+        }
+        else if (directoryName == "/")
+        {
+            while (currentDirectory.parent != null)
+            {
+                currentDirectory = currentDirectory.parent;
+                dirResponse = "Changed directory to " + currentDirectory.name;
+            }
         }
         else 
         {
@@ -260,13 +283,24 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
                 }
             }
 
-            // Handle directory not found
             if (!directoryFound)
             {
                 dirResponse = "Directory not found: " + directoryName;
             }
         }
     }
+
+    // Method to find the root directory from any current directory
+    private Directory FindRootDirectory()
+    {
+        Directory dir = currentDirectory;
+        while (dir.parent != null)
+        {
+            dir = dir.parent;
+        }
+        return dir;
+    }
+
     
     // Method to get the current directory
     public Directory GetCurrentDirectory()
