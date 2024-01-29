@@ -58,13 +58,6 @@ public class Directory
     // Method to check if a file exists in the current directory
     public bool FileExists(string fileName)
     {
-        // Append the file extension if it's not part of the fileName
-        if (!fileName.EndsWith(".txt"))
-        {
-            fileName += ".txt";
-        }
-
-        // Check if the file is in the files list
         return files.Contains(fileName);
     }
 

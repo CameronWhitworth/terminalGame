@@ -151,10 +151,11 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
         }
     }
 
-    public void EditFile(string fileName)
+    public void EditFile(string fileName, out string dirResponse)
     {
+        dirResponse = "";
         // Check if the file exists before entering editing mode
-        if (currentDirectory.FileExists(fileName))
+        if (currentDirectory.FileExists(fileName) == true)
         {
             isInEditorMode = true;
             // Assume you have an editor UI GameObject that you activate
@@ -164,15 +165,16 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
             // Load content into a UI element for editing
             editorInputField.text = fileContent;
             currentEditingFile = fileName;
+            // Activate the editor input field
+            textEditorManager.editorInputField.gameObject.SetActive(true);
+            textEditorManager.ActivateEditor();
         }
         else
         {
             AddInterpreterLines(new List<string> { "File not found: " + fileName });
+            dirResponse = "File not found: " + fileName ;
+            return;
         }
-
-        // Activate the editor input field
-        textEditorManager.editorInputField.gameObject.SetActive(true);
-        textEditorManager.ActivateEditor();
     }
 
     // Call this method when the 'save' command is entered

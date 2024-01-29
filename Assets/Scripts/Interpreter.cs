@@ -268,11 +268,20 @@ public class Interpreter : MonoBehaviour
             }
             return response;
         }
-         if (args[0] == "edit" && args.Length > 1)
+         if (args[0] == "edit")
         {
-            // Call the method to handle file editing in TerminalManager
-            terminalManager.EditFile(args[1]);
-            return new List<string>(); // We return an empty list because we're switching UI context
+            string dirResponse = "";
+            if (args.Length > 1)
+            {
+                terminalManager.EditFile(args[1], out dirResponse);
+                response.Add(dirResponse);
+                return new List<string>();
+            }
+            else
+            {
+                response.Add("ERROR: No file specified");
+            }
+            return response;
         }
         else
         {
