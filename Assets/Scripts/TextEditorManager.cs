@@ -2,9 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
+
 
 public class TextEditorManager : MonoBehaviour
 {
+    public InputField mainTextEditor; // Make sure to assign this in the Unity Editor
     public InputField editorInputField; // Make sure to assign this in the Unity Editor
     public TerminalManager terminalManager; // Assign this to link with the TerminalManager
 
@@ -22,6 +25,11 @@ public class TextEditorManager : MonoBehaviour
                 editorInputField.text = ""; // Clear the input field after command execution
             }
         }
+        if (isActive && Input.GetKeyDown(KeyCode.Tab))
+        {
+            SwitchFocus();
+        }
+        
     }
     private void ExecuteEditorCommand(string input)
     {
@@ -44,6 +52,22 @@ public class TextEditorManager : MonoBehaviour
         {
             // Add error handling or other commands as necessary
             Debug.Log("Unknown editor command: " + input);
+        }
+    }
+
+    private void SwitchFocus()
+    {
+        if (EventSystem.current.currentSelectedGameObject == editorInputField.gameObject)
+        {
+            // Switch focus to the main text editor
+            mainTextEditor.Select();
+            mainTextEditor.caretPosition = mainTextEditor.text.Length;
+        }
+        else
+        {
+            // Switch focus back to the input field
+            editorInputField.Select();
+            mainTextEditor.caretPosition = mainTextEditor.text.Length;
         }
     }
 
