@@ -79,7 +79,7 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
 
     void Update()
     {
-        if (terminalInput.isFocused)
+        if (terminalInput.isFocused && !isInEditorMode)
         {
             HandleCommandHistory();
 
@@ -158,9 +158,8 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
         if (currentDirectory.FileExists(fileName) == true)
         {
             isInEditorMode = true;
-            // Assume you have an editor UI GameObject that you activate
             editorUI.SetActive(true);
-            commandLineUI.SetActive(false); // Disable the regular command line UI
+            commandLineUI.SetActive(false); 
             string fileContent = currentDirectory.ReadFile(fileName);
             // Load content into a UI element for editing
             editorInputField.text = fileContent;
@@ -168,6 +167,8 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
             // Activate the editor input field
             textEditorManager.editorInputField.gameObject.SetActive(true);
             textEditorManager.ActivateEditor();
+            editorInputField.ActivateInputField(); // Set focus to the editor input field
+            editorInputField.Select();
         }
         else
         {
@@ -180,17 +181,23 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
     // Call this method when the 'save' command is entered
     public void SaveEditedFile()
     {
-        if (isInEditorMode)
-        {
-            currentDirectory.SaveFileContent(currentEditingFile, editorInputField.text);
-            isInEditorMode = false;
-            editorUI.SetActive(false); // Hide the editor UI
-            commandLineUI.SetActive(true); // Re-enable the command line UI
-            AddInterpreterLines(new List<string> { "File saved: " + currentEditingFile });
-        }
+
+        currentDirectory.SaveFileContent(currentEditingFile, editorInputField.text);
+        isInEditorMode = false;
+        int lines = AddInterpreterLines(new List<string> { "File saved: " + currentEditingFile });
+
         // Deactivate the editor input field
         textEditorManager.editorInputField.gameObject.SetActive(false);
         textEditorManager.DeactivateEditor();
+
+        commandLineUI.SetActive(true);
+        editorUI.SetActive(false);
+        terminalInput.ActivateInputField(); // Set focus back to the terminal input field
+        terminalInput.Select();
+        userInputLine.transform.SetAsLastSibling();
+
+        // Scroll to bottom
+        ScrollToBottom(lines);
     }
 
     // Call this method when the 'cancel' command is entered
@@ -199,10 +206,16 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
         isInEditorMode = false;
         editorUI.SetActive(false); // Hide the editor UI
         commandLineUI.SetActive(true); // Re-enable the command line UI
-        AddInterpreterLines(new List<string> { "Editing cancelled." });
+        int lines = AddInterpreterLines(new List<string> { "Editing cancelled." });
         // Deactivate the editor input field
         textEditorManager.editorInputField.gameObject.SetActive(false);
         textEditorManager.DeactivateEditor();
+        editorUI.SetActive(false);
+        terminalInput.ActivateInputField(); // Set focus back to the terminal input field
+        terminalInput.Select();
+        userInputLine.transform.SetAsLastSibling();
+        // Scroll to bottom
+        ScrollToBottom(lines);
     }
 
 
