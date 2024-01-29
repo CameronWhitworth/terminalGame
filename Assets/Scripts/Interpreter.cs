@@ -268,6 +268,12 @@ public class Interpreter : MonoBehaviour
             }
             return response;
         }
+         if (args[0] == "edit" && args.Length > 1)
+        {
+            // Call the method to handle file editing in TerminalManager
+            terminalManager.EditFile(args[1]);
+            return new List<string>(); // We return an empty list because we're switching UI context
+        }
         else
         {
             response.Add("ERROR Unknown command, Type 'help' for a list of commands");

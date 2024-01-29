@@ -55,6 +55,19 @@ public class Directory
         return root;
     }
 
+    // Method to check if a file exists in the current directory
+    public bool FileExists(string fileName)
+    {
+        // Append the file extension if it's not part of the fileName
+        if (!fileName.EndsWith(".txt"))
+        {
+            fileName += ".txt";
+        }
+
+        // Check if the file is in the files list
+        return files.Contains(fileName);
+    }
+
     // Method to create a new subdirectory
     public string CreateSubDirectory(string dirName)
     {
@@ -225,6 +238,20 @@ public class Directory
 
         aliases.Remove(aliasName);
         return $"Alias '{aliasName}' removed successfully";
+    }
+
+    public void SaveFileContent(string fileName, string content)
+    {
+        if (fileContents.ContainsKey(fileName))
+        {
+            fileContents[fileName] = content;
+        }
+        else
+        {
+            // Optionally create the file if it doesn't exist
+            AddFile(fileName);
+            fileContents[fileName] = content;
+        }
     }
 
     
