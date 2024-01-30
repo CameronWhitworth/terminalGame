@@ -11,6 +11,8 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
     public GameObject responceLine;
     public InputField terminalInput;
     public GameObject userInputLine;
+    public GameObject editorUI;
+    public GameObject commandLineUI;
     public ScrollRect sr;
     public GameObject msgList;
     private Directory currentDirectory;
@@ -18,6 +20,10 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
     private int historyIndex = 0;
     private int autocompleteIndex = -1;
     private List<string> autocompleteOptions = new List<string>();
+    private bool isInEditorMode = false;
+    private string currentEditingFile = "";
+    public InputField editorInputField;
+    public TextEditorManager textEditorManager;
 
     Interpreter interpreter;
 
@@ -27,6 +33,10 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
         currentDirectory = Directory.InitializeFileSystem();
         terminalInput.ActivateInputField();
         terminalInput.Select();
+
+        // Deactivate editor UI and input field
+        editorUI.SetActive(false);
+        textEditorManager.editorInputField.gameObject.SetActive(false);
     }
 
     public void OnPointerClick(PointerEventData eventData)
@@ -69,7 +79,7 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
 
     void Update()
     {
-        if (terminalInput.isFocused)
+        if (terminalInput.isFocused && !isInEditorMode)
         {
             HandleCommandHistory();
 
@@ -141,7 +151,72 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
         }
     }
 
+    public void EditFile(string fileName, out string dirResponse)
+    {
+        dirResponse = "";
+        // Check if the file exists before entering editing mode
+        if (currentDirectory.FileExists(fileName) == true)
+        {
+            isInEditorMode = true;
+            editorUI.SetActive(true);
+            commandLineUI.SetActive(false); 
+            string fileContent = currentDirectory.ReadFile(fileName);
+            // Load content into a UI element for editing
+            editorInputField.text = fileContent;
+            currentEditingFile = fileName;
+            // Activate the editor input field
+            textEditorManager.editorInputField.gameObject.SetActive(true);
+            textEditorManager.ActivateEditor();
+            editorInputField.ActivateInputField(); // Set focus to the editor input field
+            editorInputField.Select();
+        }
+        else
+        {
+            AddInterpreterLines(new List<string> { "File not found: " + fileName });
+            dirResponse = "File not found: " + fileName ;
+            return;
+        }
+    }
 
+    // Call this method when the 'save' command is entered
+    public void SaveEditedFile()
+    {
+
+        currentDirectory.SaveFileContent(currentEditingFile, editorInputField.text);
+        isInEditorMode = false;
+        int lines = AddInterpreterLines(new List<string> { "File saved: " + currentEditingFile });
+
+        // Deactivate the editor input field
+        textEditorManager.editorInputField.gameObject.SetActive(false);
+        textEditorManager.DeactivateEditor();
+
+        commandLineUI.SetActive(true);
+        editorUI.SetActive(false);
+        terminalInput.ActivateInputField(); // Set focus back to the terminal input field
+        terminalInput.Select();
+        userInputLine.transform.SetAsLastSibling();
+
+        // Scroll to bottom
+        ScrollToBottom(lines);
+    }
+
+    // Call this method when the 'cancel' command is entered
+    public void CancelEditing()
+    {
+        isInEditorMode = false;
+        editorUI.SetActive(false); // Hide the editor UI
+        commandLineUI.SetActive(true); // Re-enable the command line UI
+        int lines = AddInterpreterLines(new List<string> { "Editing cancelled." });
+        // Deactivate the editor input field
+        textEditorManager.editorInputField.gameObject.SetActive(false);
+        textEditorManager.DeactivateEditor();
+        editorUI.SetActive(false);
+        terminalInput.ActivateInputField(); // Set focus back to the terminal input field
+        terminalInput.Select();
+        userInputLine.transform.SetAsLastSibling();
+        // Scroll to bottom
+        ScrollToBottom(lines);
+    }
 
 
     void ClearInputField()
