@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using Yarn.Unity;
 
 public class GuideBook : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
 {
@@ -15,9 +16,13 @@ public class GuideBook : MonoBehaviour, IPointerClickHandler, IPointerEnterHandl
     public float rotationSpeed = 5f;
     public float hoverHeight = 0.2f; // Height the book will hover above its original position.
     private Coroutine hoverCoroutine; // Keep track of the hover coroutine.
+    public DialogueRunner dialogueRunner;
+    private InMemoryVariableStorage variableStorage;
+
 
     void Start()
     {
+        variableStorage = FindObjectOfType<InMemoryVariableStorage>();
         originalPosition = transform.position;
         originalRotation = transform.rotation;
     }
@@ -34,7 +39,24 @@ public class GuideBook : MonoBehaviour, IPointerClickHandler, IPointerEnterHandl
             }
             StartCoroutine(MoveAndRotateBook(isAtTarget ? targetTransform.position : originalPosition,
                                              isAtTarget ? targetTransform.rotation : originalRotation));
+        
+            
+            if(isAtTarget && WaitForBookPickedUpValue())
+            {
+                dialogueRunner.StartDialogue("WellDone");
+            }
         }
+    }
+
+    bool WaitForBookPickedUpValue()
+    {
+        variableStorage.TryGetValue("$waitForBookPickedUp", out bool x);
+        Debug.Log("test" + x);
+        if (x) 
+        {
+            return true;
+        }
+        return false;
     }
 
     public void OnPointerEnter(PointerEventData eventData)

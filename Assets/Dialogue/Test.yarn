@@ -1,8 +1,12 @@
 ﻿title: Start
+position: -114,-14
 ---
 
 /// Whether the shapes like you or not.
 <<declare $shapes_like_you = false as bool>>
+
+//Book is currently picked up
+<<declare $waitForBookPickedUp = false as bool>>
 
 /// The player's name. The player chooses this.
 /// It starts empty.
@@ -31,6 +35,14 @@ Scientist: And who is this then?
 <<endif>>
 
 Captain: And we can talk more that's cool
-Scientist: It's time to learn how to use the terminal
-Scientist: Pick up the guide book over there for me
+Scientist: It's time to learn how to use the terminal.
+Scientist: Pick up the guide book over there for me, will you?
+<<set $waitForBookPickedUp = true>>
+===
+position: 0,147
+title: WellDone
+position: 122,-14
+---
+<<set $waitForBookPickedUp = false>>
+Captain: Wow look at you go
 ===
