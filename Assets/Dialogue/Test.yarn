@@ -1,18 +1,11 @@
 ﻿title: Start
-position: -114,-14
+position: -515,88
 ---
-
-/// Whether the shapes like you or not.
-<<declare $shapes_like_you = false as bool>>
-
-//Book is currently picked up
+<<declare $crew_like_you = false as bool>>
 <<declare $waitForBookPickedUp = false as bool>>
-
-/// The player's name. The player chooses this.
-/// It starts empty.
 <<declare $name = "" as string>>
 
-<<set $shapes_like_you to true>>
+<<set $crew_like_you to true>>
 Captain: Hello, I'm the Captain'.
 Engineer: Hi there! I'm the Engineer.
 Scientist: And who is this then?
@@ -23,9 +16,9 @@ Scientist: And who is this then?
     <<set $name to "another nice name">>
 -> Why; who wants to know? I hope you all die up there!
     <<set $name to "rude name">>
-    <<set $shapes_like_you to false>>
+    <<set $crew_like_you to false>>
 
-<<if $shapes_like_you>>
+<<if $crew_like_you>>
     Captain: Nice to meet you {$name}!
     Scientist: Yeah, likewise!
 <<else>>
@@ -39,10 +32,33 @@ Scientist: It's time to learn how to use the terminal.
 Scientist: Pick up the guide book over there for me, will you?
 <<set $waitForBookPickedUp = true>>
 ===
-position: 0,147
+
 title: WellDone
-position: 122,-14
+position: -253,84
 ---
 <<set $waitForBookPickedUp = false>>
 Captain: Wow look at you go
+
+-> Continue with advanced tutorial
+    <<jump AdvancedTutorial>>
+-> I want to explore on my own for a bit
+    <<jump FreeExploration>>
+===
+
+title: AdvancedTutorial
+position: 97,-37
+---
+Captain: Great! Let's dive deeper into how things work around here.
+
+// Advanced tutorial content goes here.
+
+===
+
+title: FreeExploration
+position: 126,201
+---
+Engineer: Alright, feel free to look around and let us know if you find anything interesting.
+
+// Content for free exploration goes here.
+
 ===
