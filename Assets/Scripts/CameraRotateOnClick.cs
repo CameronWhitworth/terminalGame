@@ -2,48 +2,55 @@ using UnityEngine;
 
 public class CameraRotateOnClick : MonoBehaviour
 {
-    public Camera cameraToRotate; // Assign your camera in the inspector
-    public float rotationSpeed = 1.0f; // Speed of the rotation, adjust as necessary
+    public float rotationSpeed = 1.0f; // Speed of rotation
+    private bool isRotating = false; // Flag to check if the camera is currently rotating
+    private Quaternion targetRotation; // Target rotation
+    private Quaternion targetRotationOvershoot; // Target rotation
 
-    private void Update()
+    void Update()
     {
-        // Check if the mouse button is pressed
-        if (Input.GetMouseButtonDown(0)) // 0 is the left mouse button
+        if (isRotating)
         {
-            // Get the mouse position in screen coordinates
-            Vector3 mousePosition = Input.mousePosition;
-
-            // Calculate the screen thresholds
-            float leftThreshold = Screen.width * 0.1f;
-            float rightThreshold = Screen.width * 0.9f;
-
-            // Rotate camera left if mouse click is within the left 10% of the screen
-            if (mousePosition.x < leftThreshold)
+            // Rotate smoothly to the target rotation
+            transform.rotation = Quaternion.Lerp(transform.rotation, targetRotationOvershoot, Time.deltaTime * rotationSpeed);
+            Debug.Log(Time.deltaTime * rotationSpeed);
+            
+            // Check if the rotation is close enough to the target rotation
+            if (Quaternion.Angle(transform.rotation, targetRotation) < 0.0000001f) //Thsi causes a snap
             {
-                StartCoroutine(RotateCamera(Vector3.up, -90)); // Rotate left
+                // If very close, complete the rotation to ensure it ends
+                transform.rotation = targetRotation;
+                isRotating = false;
             }
-            // Rotate camera right if mouse click is within the right 10% of the screen
-            else if (mousePosition.x > rightThreshold)
+        }
+        else
+        {
+            // Check if the mouse is within 10% of the screen width from the left or right edge
+            if (Input.GetMouseButtonDown(0)) // Left mouse button clicked
             {
-                StartCoroutine(RotateCamera(Vector3.up, 90)); // Rotate right
+                Vector3 mousePosition = Input.mousePosition;
+                if (mousePosition.x <= Screen.width * 0.1f)
+                {
+                    // Left side clicked
+                    StartRotation(-90, -91);
+                }
+                else if (mousePosition.x >= Screen.width * 0.9f)
+                {
+                    // Right side clicked
+                    StartRotation(90, 91);
+                }
             }
         }
     }
 
-    private System.Collections.IEnumerator RotateCamera(Vector3 axis, float angle)
+    void StartRotation(float angle, float angleOvershoot)
     {
-        Quaternion originalRotation = cameraToRotate.transform.rotation;
-        Quaternion targetRotation = cameraToRotate.transform.rotation * Quaternion.Euler(axis * angle);
-        float time = 0.0f;
-
-        while (time < 1.0f)
+        if (!isRotating)
         {
-            cameraToRotate.transform.rotation = Quaternion.Lerp(originalRotation, targetRotation, time);
-            time += Time.deltaTime * rotationSpeed;
-            yield return null;
+            float overshot = angle * 1.01f;
+            targetRotation = transform.rotation * Quaternion.Euler(0, angle, 0); // Calculate target rotation
+            targetRotationOvershoot = transform.rotation * Quaternion.Euler(0, overshot, 0); // Calculate target rotation
+            isRotating = true; // Set the flag to true
         }
-
-        // Ensure the rotation completes
-        cameraToRotate.transform.rotation = targetRotation;
     }
 }
