@@ -7,29 +7,72 @@ public class GuideBook : MonoBehaviour, IPointerClickHandler, IPointerEnterHandl
 {
     public Transform targetTransform;
     private Vector3 originalPosition;
+    private Quaternion targetRotation; // Rotation of the book when it's at the target.
     private Quaternion originalRotation;
+    private Quaternion currentTargetRotation; // To store the current target rotation (used for smooth rotation back).
     private bool isMoving = false;
     private bool isAtTarget = false;
     private bool isHovering = false;
+    private bool isRotatingBack = false; // To check if the book is rotating back to its target rotation.
     public float moveSpeed = 5f;
     public float hoverSpeed = 5f;
     public float rotationSpeed = 5f;
+    public float returnRotationSpeed = 100f; // Adjusted for constant speed rotation.
     public float hoverHeight = 0.2f; // Height the book will hover above its original position.
     private Coroutine hoverCoroutine; // Keep track of the hover coroutine.
+    private Coroutine rotateBackCoroutine; // Keep track of the rotate back coroutine.
     public DialogueRunner dialogueRunner;
     private InMemoryVariableStorage variableStorage;
-
 
     void Start()
     {
         variableStorage = FindObjectOfType<InMemoryVariableStorage>();
         originalPosition = transform.position;
         originalRotation = transform.rotation;
+        targetRotation = targetTransform.rotation; // Assume the target rotation is the initial rotation of the targetTransform.
+        currentTargetRotation = targetRotation; // Initialize current target rotation.
+    }
+
+    void Update()
+    {
+        // Rotate the book with right mouse button held down
+        if (isAtTarget && Input.GetMouseButton(1) && !isRotatingBack && !isMoving)
+        {
+            float mouseX = Input.GetAxis("Mouse X") * rotationSpeed;
+            float mouseY = -Input.GetAxis("Mouse Y") * rotationSpeed;
+            transform.Rotate(Vector3.up, mouseX, Space.World);
+            transform.Rotate(Vector3.right, mouseY, Space.World);
+        }
+
+        // Start rotating back when right mouse button is released
+        if (isAtTarget && Input.GetMouseButtonUp(1) && !isRotatingBack)
+        {
+            if (rotateBackCoroutine != null)
+            {
+                StopCoroutine(rotateBackCoroutine);
+            }
+            rotateBackCoroutine = StartCoroutine(RotateBackToTargetRotation());
+        }
+    }
+
+    IEnumerator RotateBackToTargetRotation()
+    {
+        isRotatingBack = true;
+
+        while (Quaternion.Angle(transform.rotation, currentTargetRotation) > 0.01f)
+        {
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, currentTargetRotation, returnRotationSpeed * Time.deltaTime);
+            yield return null;
+        }
+
+        transform.rotation = currentTargetRotation; // Ensure the rotation is exactly the target rotation at the end.
+        isRotatingBack = false;
     }
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        if (!isMoving)
+        // Check for left mouse button click
+        if (eventData.button == PointerEventData.InputButton.Left && !isMoving && !isRotatingBack)
         {
             isAtTarget = !isAtTarget;
             isHovering = false; // Ensure we stop hovering when the book is picked up.
@@ -38,9 +81,8 @@ public class GuideBook : MonoBehaviour, IPointerClickHandler, IPointerEnterHandl
                 StopCoroutine(hoverCoroutine);
             }
             StartCoroutine(MoveAndRotateBook(isAtTarget ? targetTransform.position : originalPosition,
-                                             isAtTarget ? targetTransform.rotation : originalRotation));
-        
-            
+                                             isAtTarget ? targetRotation : originalRotation));
+
             if(isAtTarget && WaitForBookPickedUpValue())
             {
                 dialogueRunner.StartDialogue("WellDone");
@@ -51,17 +93,12 @@ public class GuideBook : MonoBehaviour, IPointerClickHandler, IPointerEnterHandl
     bool WaitForBookPickedUpValue()
     {
         variableStorage.TryGetValue("$waitForBookPickedUp", out bool x);
-        Debug.Log("test" + x);
-        if (x) 
-        {
-            return true;
-        }
-        return false;
+        return x; // Simplified return statement.
     }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (!isAtTarget && !isMoving)
+        if (!isAtTarget && !isMoving && !isRotatingBack)
         {
             isHovering = true;
             if (hoverCoroutine != null) // If there's an ongoing hover coroutine, stop it.
@@ -74,7 +111,7 @@ public class GuideBook : MonoBehaviour, IPointerClickHandler, IPointerEnterHandl
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        if (!isAtTarget && isHovering)
+        if (!isAtTarget && isHovering && !isRotatingBack)
         {
             isHovering = false;
             if (hoverCoroutine != null) // If there's an ongoing hover coroutine, stop it.
