@@ -158,7 +158,7 @@ MonoBehaviour:
   targetTransform: {fileID: 669309827}
   moveSpeed: 25
   hoverSpeed: 5
-  rotationSpeed: 5
+  rotationSpeed: 10
   returnRotationSpeed: 750
   hoverHeight: 0.1
   dialogueRunner: {fileID: 0}
@@ -521,7 +521,7 @@ MonoBehaviour:
   targetTransform: {fileID: 669309827}
   moveSpeed: 25
   hoverSpeed: 5
-  rotationSpeed: 5
+  rotationSpeed: 10
   returnRotationSpeed: 750
   hoverHeight: 0.1
   dialogueRunner: {fileID: 0}
@@ -1467,7 +1467,7 @@ MonoBehaviour:
   targetTransform: {fileID: 669309827}
   moveSpeed: 25
   hoverSpeed: 5
-  rotationSpeed: 5
+  rotationSpeed: 10
   returnRotationSpeed: 750
   hoverHeight: 0.1
   dialogueRunner: {fileID: 0}

@@ -7,51 +7,81 @@ public class GuideBook : MonoBehaviour, IPointerClickHandler, IPointerEnterHandl
 {
     public Transform targetTransform;
     private Vector3 originalPosition;
-    private Quaternion targetRotation; // Rotation of the book when it's at the target.
+    private Quaternion targetRotation;
     private Quaternion originalRotation;
-    private Quaternion currentTargetRotation; // To store the current target rotation (used for smooth rotation back).
+    private Quaternion currentTargetRotation;
     private bool isMoving = false;
     private bool isAtTarget = false;
     private bool isHovering = false;
-    private bool isRotatingBack = false; // To check if the book is rotating back to its target rotation.
+    private bool isRotatingBack = false;
     public float moveSpeed = 5f;
     public float hoverSpeed = 5f;
     public float rotationSpeed = 5f;
-    public float returnRotationSpeed = 100f; // Adjusted for constant speed rotation.
-    public float hoverHeight = 0.2f; // Height the book will hover above its original position.
-    private Coroutine hoverCoroutine; // Keep track of the hover coroutine.
-    private Coroutine rotateBackCoroutine; // Keep track of the rotate back coroutine.
+    public float returnRotationSpeed = 100f;
+    public float hoverHeight = 0.2f;
+    private Coroutine hoverCoroutine;
+    private Coroutine rotateBackCoroutine;
     public DialogueRunner dialogueRunner;
     private InMemoryVariableStorage variableStorage;
+
+    // Static variable to track the currently picked up item
+    private static GuideBook currentlyPickedUpItem = null;
 
     void Start()
     {
         variableStorage = FindObjectOfType<InMemoryVariableStorage>();
         originalPosition = transform.position;
         originalRotation = transform.rotation;
-        targetRotation = targetTransform.rotation; // Assume the target rotation is the initial rotation of the targetTransform.
-        currentTargetRotation = targetRotation; // Initialize current target rotation.
+        targetRotation = targetTransform.rotation;
+        currentTargetRotation = targetRotation;
     }
 
     void Update()
     {
-        // Rotate the book with right mouse button held down
-        if (isAtTarget && Input.GetMouseButton(1) && !isRotatingBack && !isMoving)
-        {
-            float mouseX = Input.GetAxis("Mouse X") * rotationSpeed;
-            float mouseY = -Input.GetAxis("Mouse Y") * rotationSpeed;
-            transform.Rotate(Vector3.up, mouseX, Space.World);
-            transform.Rotate(Vector3.right, mouseY, Space.World);
-        }
+        HandleRightClickRotation();
+    }
 
-        // Start rotating back when right mouse button is released
-        if (isAtTarget && Input.GetMouseButtonUp(1) && !isRotatingBack)
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (eventData.button == PointerEventData.InputButton.Left && !isMoving && !isRotatingBack)
         {
-            if (rotateBackCoroutine != null)
+            // Automatically put down the current item if a different one is clicked
+            if (currentlyPickedUpItem != null && currentlyPickedUpItem != this)
             {
-                StopCoroutine(rotateBackCoroutine);
+                currentlyPickedUpItem.PutDownItem();
             }
-            rotateBackCoroutine = StartCoroutine(RotateBackToTargetRotation());
+
+            ToggleItemState();
+
+            if (isAtTarget && WaitForBookPickedUpValue())
+            {
+                dialogueRunner.StartDialogue("WellDone");
+            }
+        }
+    }
+
+    private void ToggleItemState()
+    {
+        isAtTarget = !isAtTarget;
+        isHovering = false;
+        if (hoverCoroutine != null)
+        {
+            StopCoroutine(hoverCoroutine);
+        }
+        StartCoroutine(MoveAndRotateBook(isAtTarget ? targetTransform.position : originalPosition,
+                                         isAtTarget ? targetRotation : originalRotation));
+
+        // Update the reference to the currently picked up item
+        currentlyPickedUpItem = isAtTarget ? this : null;
+    }
+
+    public void PutDownItem()
+    {
+        if (isAtTarget)
+        {
+            // Trigger the logic to move and rotate the book back to its original position
+            StartCoroutine(MoveAndRotateBook(originalPosition, originalRotation));
+            isAtTarget = false;
         }
     }
 
@@ -67,27 +97,6 @@ public class GuideBook : MonoBehaviour, IPointerClickHandler, IPointerEnterHandl
 
         transform.rotation = currentTargetRotation; // Ensure the rotation is exactly the target rotation at the end.
         isRotatingBack = false;
-    }
-
-    public void OnPointerClick(PointerEventData eventData)
-    {
-        // Check for left mouse button click
-        if (eventData.button == PointerEventData.InputButton.Left && !isMoving && !isRotatingBack)
-        {
-            isAtTarget = !isAtTarget;
-            isHovering = false; // Ensure we stop hovering when the book is picked up.
-            if (hoverCoroutine != null) // If there's an ongoing hover coroutine, stop it.
-            {
-                StopCoroutine(hoverCoroutine);
-            }
-            StartCoroutine(MoveAndRotateBook(isAtTarget ? targetTransform.position : originalPosition,
-                                             isAtTarget ? targetRotation : originalRotation));
-
-            if(isAtTarget && WaitForBookPickedUpValue())
-            {
-                dialogueRunner.StartDialogue("WellDone");
-            }
-        }
     }
 
     bool WaitForBookPickedUpValue()
@@ -152,6 +161,30 @@ public class GuideBook : MonoBehaviour, IPointerClickHandler, IPointerEnterHandl
         if (!isAtTarget)
         {
             transform.position = endPosition;
+        }
+    }
+
+    private void HandleRightClickRotation()
+    {
+        if (isAtTarget && Input.GetMouseButton(1) && !isRotatingBack && !isMoving)
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+            float mouseX = Input.GetAxis("Mouse X") * (rotationSpeed * 0.35f);
+            float mouseY = -Input.GetAxis("Mouse Y") * (rotationSpeed * 0.35f);
+            transform.Rotate(Vector3.up, mouseX, Space.World);
+            transform.Rotate(Vector3.right, mouseY, Space.World);
+        }
+
+        if (isAtTarget && Input.GetMouseButtonUp(1) && !isRotatingBack)
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+            if (rotateBackCoroutine != null)
+            {
+                StopCoroutine(rotateBackCoroutine);
+            }
+            rotateBackCoroutine = StartCoroutine(RotateBackToTargetRotation());
         }
     }
 }
