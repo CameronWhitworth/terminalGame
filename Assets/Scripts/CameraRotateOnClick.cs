@@ -4,9 +4,16 @@ public class CameraRotateOnClick : MonoBehaviour
 {
     public float rotationSpeed = 1.0f; // Speed of rotation
     private bool isRotating = false; // Flag to check if the camera is currently rotating
-    private bool lookingUp = false; // Flag to check if the camera is currently rotating
+    private bool lookingUp = false; // Flag to check if the camera is looking up
     private Quaternion targetRotation; // Target rotation
     private Quaternion targetRotationOvershoot; // Target rotation for overshooting
+    private Quaternion originalRotation; // Original rotation before sway
+
+    void Start()
+    {
+        // Initialize originalRotation at start
+        originalRotation = transform.rotation;
+    }
 
     void Update()
     {
@@ -21,42 +28,42 @@ public class CameraRotateOnClick : MonoBehaviour
                 // If very close, complete the rotation to ensure it ends
                 transform.rotation = targetRotation;
                 isRotating = false;
+                originalRotation = transform.rotation; // Update originalRotation after rotation completes
             }
         }
         else
         {
-            Vector3 mousePosition = Input.mousePosition;
-            // Only allow up/down rotation if looking straight (or nearly straight) forward
-            if (Mathf.Abs(transform.eulerAngles.y) < 1.0f || Mathf.Abs(transform.eulerAngles.y - 360) < 1.0f)
+            SwayCamera(); // Allow camera to sway when not rotating
+            CheckForRotationInput();
+        }
+    }
+
+    void CheckForRotationInput()
+    {
+        Vector3 mousePosition = Input.mousePosition;
+        // Check for rotation input
+        if (Input.GetMouseButtonDown(0)) // Left mouse button clicked
+        {
+            // Determine rotation based on mouse position
+            if (mousePosition.y >= Screen.height * 0.9f && !lookingUp)
             {
-                if (Input.GetMouseButtonDown(0)) // Left mouse button clicked
-                {
-                    if (mousePosition.y >= Screen.height * 0.9f && !lookingUp)
-                    {
-                        lookingUp = true;
-                        StartTiltRotation(-20);
-                    }
-                    else if (mousePosition.y <= Screen.height * 0.1f && lookingUp)
-                    {
-                        lookingUp = false;
-                        StartTiltRotation(20);
-                    }
-                }
+                lookingUp = true;
+                StartTiltRotation(-20);
             }
-            
-            // Left or right rotation
-            if (Input.GetMouseButtonDown(0)) // Left mouse button clicked
+            else if (mousePosition.y <= Screen.height * 0.1f && lookingUp)
             {
-                if (mousePosition.x <= Screen.width * 0.1f && !lookingUp)
-                {
-                    // Left side clicked
-                    StartRotation(-90);
-                }
-                else if (mousePosition.x >= Screen.width * 0.9f && !lookingUp)
-                {
-                    // Right side clicked
-                    StartRotation(90);
-                }
+                lookingUp = false;
+                StartTiltRotation(20);
+            }
+            else if (mousePosition.x <= Screen.width * 0.1f && !lookingUp)
+            {
+                // Left side clicked
+                StartRotation(-90);
+            }
+            else if (mousePosition.x >= Screen.width * 0.9f && !lookingUp)
+            {
+                // Right side clicked
+                StartRotation(90);
             }
         }
     }
@@ -66,8 +73,8 @@ public class CameraRotateOnClick : MonoBehaviour
         if (!isRotating)
         {
             float overshot = angle * 1.01f;
-            targetRotation = transform.rotation * Quaternion.Euler(0, angle, 0);
-            targetRotationOvershoot = transform.rotation * Quaternion.Euler(0, overshot, 0);
+            targetRotation = originalRotation * Quaternion.Euler(0, angle, 0);
+            targetRotationOvershoot = originalRotation * Quaternion.Euler(0, overshot, 0);
             isRotating = true;
         }
     }
@@ -77,9 +84,42 @@ public class CameraRotateOnClick : MonoBehaviour
         if (!isRotating)
         {
             float overshot = angle * 1.01f;
-            targetRotation = transform.rotation * Quaternion.Euler(angle, 0, 0);
-            targetRotationOvershoot = transform.rotation * Quaternion.Euler(overshot, 0, 0);
+            targetRotation = originalRotation * Quaternion.Euler(angle, 0, 0);
+            targetRotationOvershoot = originalRotation * Quaternion.Euler(overshot, 0, 0);
             isRotating = true;
+        }
+    }
+
+    void SwayCamera()
+    {
+        if (!isRotating) // Only sway if not already rotating
+        {
+            Vector3 mousePosition = Input.mousePosition;
+            float swayAmount = 2.0f; // Adjust sway amount here
+            Quaternion swayRotation = Quaternion.identity;
+
+            if (mousePosition.x <= Screen.width * 0.1f && !lookingUp)
+            {
+                // Sway left
+                swayRotation = Quaternion.Euler(0, -swayAmount, 0);
+            }
+            else if (mousePosition.x >= Screen.width * 0.9f && !lookingUp)
+            {
+                // Sway right
+                swayRotation = Quaternion.Euler(0, swayAmount, 0);
+            }
+            else if (mousePosition.y >= Screen.height * 0.9f && !lookingUp)
+            {
+                // Sway up
+                swayRotation = Quaternion.Euler(-swayAmount, 0, 0);
+            }
+            else if (mousePosition.y <= Screen.height * 0.1f && lookingUp)
+            {
+                // Sway down
+                swayRotation = Quaternion.Euler(swayAmount, 0, 0);
+            }
+
+            transform.rotation = Quaternion.Lerp(transform.rotation, originalRotation * swayRotation, Time.deltaTime * rotationSpeed);
         }
     }
 }

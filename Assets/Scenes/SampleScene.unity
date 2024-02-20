@@ -156,7 +156,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   targetTransform: {fileID: 669309827}
-  moveSpeed: 20
+  moveSpeed: 25
   hoverSpeed: 5
   rotationSpeed: 5
   returnRotationSpeed: 750
@@ -519,7 +519,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   targetTransform: {fileID: 669309827}
-  moveSpeed: 20
+  moveSpeed: 25
   hoverSpeed: 5
   rotationSpeed: 5
   returnRotationSpeed: 750
@@ -1465,7 +1465,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   targetTransform: {fileID: 669309827}
-  moveSpeed: 20
+  moveSpeed: 25
   hoverSpeed: 5
   rotationSpeed: 5
   returnRotationSpeed: 750
@@ -2322,8 +2322,8 @@ Transform:
   m_GameObject: {fileID: 1219481119}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -3.28, z: 2.26}
-  m_LocalScale: {x: 26.358255, y: 0.72751, z: 10.520195}
+  m_LocalPosition: {x: 0, y: -3.28, z: 0.62}
+  m_LocalScale: {x: 26.358255, y: 0.72751, z: 14.2464485}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -3231,7 +3231,7 @@ Transform:
   m_GameObject: {fileID: 1795708517}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 5.12, y: -1.93, z: -1.52}
+  m_LocalPosition: {x: 6.12, y: -1.93, z: -0.88}
   m_LocalScale: {x: 1, y: 1.3353109, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
