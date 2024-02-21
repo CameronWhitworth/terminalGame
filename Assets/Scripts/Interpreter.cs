@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -238,7 +239,6 @@ public class Interpreter : MonoBehaviour
         //open text file
         if (args[0] == "cat" || args[0] == "open")
         {
-            string fileResponse = "";
             if (args.Length > 1)
             {
                 string fileName = args[1];
@@ -248,8 +248,15 @@ public class Interpreter : MonoBehaviour
                     fileName += ".txt";
                 }
 
-                fileResponse = terminalManager.GetCurrentDirectory().ReadFile(fileName);
-                response.Add(fileResponse);
+            string fileContent = terminalManager.GetCurrentDirectory().ReadFile(fileName);
+            if (fileContent == "File not found: " + fileName)
+            {
+                response.Add(fileContent);
+            }
+            else
+            {
+                DisplayFileContentLineByLine(fileContent);
+            }
             }
             else
             {
@@ -333,6 +340,19 @@ public class Interpreter : MonoBehaviour
         }
 
         file.Close();
+    }
+
+    // This method is called within the Interpret method for the "cat" or "open" command
+    private void DisplayFileContentLineByLine(string fileContent)
+    {
+        // Split the file content into lines
+        string[] lines = fileContent.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+
+        foreach (string line in lines)
+        {
+            // Add each line to the response list
+            response.Add(line);
+        }
     }
 
     // Method to list contents of the current directory

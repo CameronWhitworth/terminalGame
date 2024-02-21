@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.IO;
+using UnityEngine;
 
 [System.Serializable]
 public class Directory
@@ -28,12 +30,6 @@ public class Directory
         subDirectories.Add(newDir);
     }
 
-    // Add a new file
-    public void AddFile(string fileName)
-    {
-        files.Add(fileName);
-    }
-
     // Initialize a basic file system
     public static Directory InitializeFileSystem()
     {
@@ -42,19 +38,62 @@ public class Directory
 
         // Create 'documents' directory with two subdirectories
         root.AddSubDirectory("documents");
+        root.AddTextFileFromRealFile("exampleFile", "test.txt");
         Directory documents = root.subDirectories.Find(d => d.name == "documents");
         documents.AddSubDirectory("folder1");
+        documents.AddTextFileFromRealFile("exampleFile", "beowulf.txt");
         documents.AddSubDirectory("folder2");
 
         // Create 'id' directory with a text file
         root.AddSubDirectory("id");
         Directory id = root.subDirectories.Find(d => d.name == "id");
-        id.AddFile("info.txt");
         id.AddSubDirectory("folder");
 
         return root;
     }
 
+    // Method to add a text file with content from a real file within the Unity project's StreamingAssets folder
+    public void AddTextFileFromRealFile(string virtualFileName, string realFilePath)
+    {
+        string content = ReadContentFromRealFile(realFilePath);
+        if (!string.IsNullOrEmpty(content))
+        {
+            // If content was successfully read, create the file with that content
+            this.CreateFileWithContent(virtualFileName, content);
+        }
+    }
+
+    // Read content from a real file located in the Unity project's StreamingAssets folder
+    private string ReadContentFromRealFile(string filePath)
+    {
+        try
+        {
+            string path = Path.Combine(Application.streamingAssetsPath, filePath);
+            if (File.Exists(path))
+            {
+                return File.ReadAllText(path);
+            }
+        }
+        catch (IOException e)
+        {
+            Debug.LogError("Error reading file: " + e.Message);
+        }
+        return null;
+    }
+
+    // Create a file in the directory with given content
+    private void CreateFileWithContent(string fileName, string content)
+    {
+        if (!fileName.EndsWith(".txt"))
+        {
+            fileName += ".txt";
+        }
+        if (!files.Contains(fileName))
+        {
+            files.Add(fileName);
+            fileContents[fileName] = content;
+        }
+    }
     // Method to check if a file exists in the current directory
     public bool FileExists(string fileName)
     {
@@ -237,12 +276,6 @@ public class Directory
     {
         if (fileContents.ContainsKey(fileName))
         {
-            fileContents[fileName] = content;
-        }
-        else
-        {
-            // Optionally create the file if it doesn't exist
-            AddFile(fileName);
             fileContents[fileName] = content;
         }
     }
