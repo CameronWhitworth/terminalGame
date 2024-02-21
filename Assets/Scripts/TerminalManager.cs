@@ -64,17 +64,17 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
         AddDirectoryLine(input);
 
         // Add interpreter/response line
-        int lines = AddInterpreterLines(interpreter.Interpret(input));
+        List<string> interpretationLines = interpreter.Interpret(input);
 
         // Scroll to bottom
-        ScrollToBottom(lines);
+        StartCoroutine(AddLinesWithDelay(interpretationLines));
 
         // Move user input to the end
-        userInputLine.transform.SetAsLastSibling();
+        //userInputLine.transform.SetAsLastSibling();
 
         // Refocus the input field
-        terminalInput.ActivateInputField();
-        terminalInput.Select();
+        // terminalInput.ActivateInputField();
+        // terminalInput.Select();
     }
 
     void Update()
@@ -197,7 +197,7 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
         userInputLine.transform.SetAsLastSibling();
 
         // Scroll to bottom
-        ScrollToBottom(lines);
+        StartCoroutine(SmoothScrollToBottom());
     }
 
     // Call this method when the 'cancel' command is entered
@@ -215,7 +215,7 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
         terminalInput.Select();
         userInputLine.transform.SetAsLastSibling();
         // Scroll to bottom
-        ScrollToBottom(lines);
+        StartCoroutine(SmoothScrollToBottom());
     }
 
 
@@ -310,6 +310,63 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
             sr.verticalNormalizedPosition = 0;
         }
     }
+
+    IEnumerator SmoothScrollToBottom()
+    {
+        Canvas.ForceUpdateCanvases(); // Update the canvas immediately to ensure all UI elements are current.
+
+        // Wait for a frame to let the UI elements update their positions and sizes.
+        yield return null; 
+
+        // Ensure the scroll position is at the very bottom.
+        sr.verticalNormalizedPosition = 0;
+    }
+
+    IEnumerator AddLinesWithDelay(List<string> lines)
+    {
+        // Disable user input at the start
+        terminalInput.interactable = false;
+        userInputLine.gameObject.SetActive(false);
+
+        foreach (var line in lines)
+        {
+            // Create response line
+            GameObject res = Instantiate(responceLine, msgList.transform);
+
+            // Set it at the end of all messages
+            res.transform.SetAsLastSibling();
+
+            // Set size of message list and resize
+            Vector2 listSize = msgList.GetComponent<RectTransform>().sizeDelta;
+            msgList.GetComponent<RectTransform>().sizeDelta = new Vector2(listSize.x, listSize.y + 35.0f);
+
+            // Set text of response line
+            res.GetComponentInChildren<Text>().text = line;
+
+            // Scroll to the newly added line smoothly
+            StartCoroutine(SmoothScrollToBottom());
+
+            // Wait for a specified delay before adding the next line
+            yield return new WaitForSeconds(0.03f); // Adjust this delay to match the desired speed
+
+            userInputLine.transform.SetAsLastSibling();
+        }
+        
+        // After adding all lines, move the user input line to the end
+        userInputLine.transform.SetAsLastSibling();
+        userInputLine.gameObject.SetActive(true);
+
+        // Re-enable user input at the end
+        terminalInput.interactable = true;
+
+        // Optionally, ensure the scroll view is at the bottom after all lines have been added and user input is re-enabled
+        StartCoroutine(SmoothScrollToBottom());
+
+        // Refocus on the input field after re-enabling it
+        terminalInput.ActivateInputField();
+        terminalInput.Select();
+    }
+
 
     public void ChangeDirectory(string directoryName, out string dirResponse)
     {
