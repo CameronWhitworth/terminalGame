@@ -65,6 +65,10 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
     {
         // Store command in history and reset history index to the end
         commandHistory.Add(input);
+        if (commandHistory.Count > 250)
+        {
+            commandHistory.RemoveAt(0); // Remove the oldest entry to maintain a max size of 100
+        }
         historyIndex = commandHistory.Count;
 
         ClearInputField();
@@ -455,6 +459,11 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
 
         // Force the canvas to update
         Canvas.ForceUpdateCanvases();
+    }
+
+    public IReadOnlyList<string> GetCommandHistory()
+    {
+        return commandHistory.AsReadOnly();
     }
 
 
