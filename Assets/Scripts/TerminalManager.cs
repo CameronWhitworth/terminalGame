@@ -86,7 +86,16 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
     {
         if (terminalInput.isFocused && !isInEditorMode)
         {
-            HandleCommandHistory();
+
+            if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift) || 
+            Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
+            {
+                HandleScrolling();
+            }
+            else 
+            {
+                HandleCommandHistory();
+            }
 
             if (Input.GetKeyDown(KeyCode.Tab))
             {
@@ -100,6 +109,8 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
                 autocompleteIndex = -1;
             }
         }
+        // Additional functionality for scrolling
+        
     }
 
     private void HandleCommandHistory()
@@ -153,6 +164,25 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
             // Append the last part to the base path only if there is a base path
             terminalInput.text = (basePath.Length > 0 ? basePath + " " : "") + autocompleteOptions[autocompleteIndex];
             terminalInput.caretPosition = terminalInput.text.Length; // Move the caret to the end
+        }
+    }
+
+    private void HandleScrolling()
+    {
+        // Check if either Shift or Control is being held down
+        if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift) || 
+            Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
+        {
+            if (Input.GetKeyDown(KeyCode.UpArrow))
+            {
+                // Scroll up the terminal output
+                ScrollTerminal(-1); // Scroll up
+            }
+            else if (Input.GetKeyDown(KeyCode.DownArrow))
+            {
+                // Scroll down the terminal output
+                ScrollTerminal(1); // Scroll down
+            }
         }
     }
 
@@ -304,18 +334,6 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
         return interpretation.Count;
     }
 
-    void ScrollToBottom(int lines)
-    {
-        if (lines > 4)
-        {
-            sr.velocity = new Vector2(0, 4500);
-        }
-        else
-        {
-            sr.verticalNormalizedPosition = 0;
-        }
-    }
-
     IEnumerator SmoothScrollToBottom()
     {
         Canvas.ForceUpdateCanvases(); // Update the canvas immediately to ensure all UI elements are current.
@@ -325,6 +343,27 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
 
         // Ensure the scroll position is at the very bottom.
         sr.verticalNormalizedPosition = 0;
+    }
+
+    private void ScrollTerminal(int direction)
+    {
+        // This the current height the gameobject. one we make is a verible we can scale remember to adjust this to keep scroll by one line consitant
+        float singleLineHeight = 35.0f; 
+
+        // Calculate the total content height
+        float totalContentHeight = msgList.GetComponent<RectTransform>().sizeDelta.y;
+
+        // Calculate the visible height of the ScrollRect's viewport
+        float viewportHeight = sr.viewport.rect.height;
+
+        // Calculate the total number of visible lines in the viewport
+        int totalVisibleLines = Mathf.FloorToInt(viewportHeight / singleLineHeight);
+
+        // Calculate the scroll step as a proportion of one line per the total number of lines
+        float scrollStep = 1f / (totalContentHeight / singleLineHeight - totalVisibleLines + 1);
+
+        // Adjust the verticalNormalizedPosition based on the scroll direction and calculated step
+        sr.verticalNormalizedPosition = Mathf.Clamp01(sr.verticalNormalizedPosition + scrollStep * direction);
     }
 
     IEnumerator AddLinesWithDelay(List<string> lines)
