@@ -51,6 +51,14 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
         {
             ExecuteInput(terminalInput.text);
         }
+        else if (terminalInput.isFocused && terminalInput.text == "" && Input.GetKeyDown(KeyCode.Return))
+        {
+            ClearInputField();
+            AddDirectoryLine("");
+            List<string> list = new List<string>();
+            StartCoroutine(AddLinesWithDelay(list));
+
+        }
     }
 
     private void ExecuteInput(string input)
@@ -68,13 +76,6 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
 
         // Scroll to bottom
         StartCoroutine(AddLinesWithDelay(interpretationLines));
-
-        // Move user input to the end
-        //userInputLine.transform.SetAsLastSibling();
-
-        // Refocus the input field
-        // terminalInput.ActivateInputField();
-        // terminalInput.Select();
     }
 
     void Update()

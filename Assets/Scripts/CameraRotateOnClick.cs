@@ -9,10 +9,20 @@ public class CameraRotateOnClick : MonoBehaviour
     private Quaternion targetRotationOvershoot; // Target rotation for overshooting
     private Quaternion originalRotation; // Original rotation before sway
 
+    // Zoom variables
+    public float zoomSpeed = 5f; // Speed of zooming in and out
+    public float zoomedFOV = 30f; // FOV when zoomed in
+    private float originalFOV; // Original FOV before zooming
+    private Camera cameraComponent; // Camera component
+
     void Start()
     {
         // Initialize originalRotation at start
         originalRotation = transform.rotation;
+        cameraComponent = GetComponent<Camera>(); // Get the Camera component
+        originalFOV = cameraComponent.fieldOfView; // Store the original FOV
+
+        
     }
 
     void Update()
@@ -35,6 +45,20 @@ public class CameraRotateOnClick : MonoBehaviour
         {
             SwayCamera(); // Allow camera to sway when not rotating
             CheckForRotationInput();
+            CheckForZoomInput(); // Check for zoom input
+        }
+    }
+
+    // New method for handling zoom input
+    void CheckForZoomInput()
+    {
+        if (Input.GetMouseButton(1)) // Right mouse button held down
+        {
+            cameraComponent.fieldOfView = Mathf.Lerp(cameraComponent.fieldOfView, zoomedFOV, Time.deltaTime * zoomSpeed);
+        }
+        else
+        {
+            cameraComponent.fieldOfView = Mathf.Lerp(cameraComponent.fieldOfView, originalFOV, Time.deltaTime * zoomSpeed);
         }
     }
 

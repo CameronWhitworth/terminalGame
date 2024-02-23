@@ -6816,7 +6816,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: C:\TERMINAL
+  m_Text: $:\TERMINAL
 --- !u!222 &1636107739
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -8496,6 +8496,10 @@ PrefabInstance:
     - target: {fileID: 2009596296667592950, guid: ee50a13b1f0f27e4faa6c7c43d158276, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2118753747002844480, guid: ee50a13b1f0f27e4faa6c7c43d158276, type: 3}
+      propertyPath: m_Text
+      value: $:\TERMINAL
       objectReference: {fileID: 0}
     - target: {fileID: 3013357235481929316, guid: ee50a13b1f0f27e4faa6c7c43d158276, type: 3}
       propertyPath: m_AnchorMax.y

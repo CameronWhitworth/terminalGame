@@ -157,7 +157,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: C:\TERMINAL
+  m_Text: $:\TERMINAL
 --- !u!1 &6869866283465687493
 GameObject:
   m_ObjectHideFlags: 0
