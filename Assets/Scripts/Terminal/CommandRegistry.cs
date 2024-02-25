@@ -12,6 +12,19 @@ public class CommandRegistry
         commands.Add("help", new HelpCommand());
         commands.Add("ls", new LsCommand());
         commands.Add("color", new SwitchThemeCommand());
+        commands.Add("alias", new AliasCommand());
+        commands.Add("echo", new EchoCommand());
+        commands.Add("cd", new CdCommand());
+        commands.Add("mkdir", new MkdirCommand());
+        commands.Add("rmdir", new RmdirCommand());
+        commands.Add("rm", new RmCommand());
+        commands.Add("delete", new RmCommand());
+        commands.Add("remove", new RmCommand());
+        commands.Add("open", new OpenCommand());
+        commands.Add("cat", new OpenCommand());
+        commands.Add("touch", new TouchCommand());
+        commands.Add("edit", new EditCommand());
+        commands.Add("history", new HistoryCommand());
         // Add other commands here
     }
 
@@ -21,7 +34,6 @@ public class CommandRegistry
         {
             return command;
         }
-
-        return null; // Or a default command that indicates command not found
+        return null;
     }
 }

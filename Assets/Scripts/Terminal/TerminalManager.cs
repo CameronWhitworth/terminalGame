@@ -25,6 +25,7 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
     public InputField editorInputField;
     public TextEditorManager textEditorManager;
     private ThemeManager themeManager;
+    private CommandRegistry commandRegistry;
 
     Interpreter interpreter;
 
@@ -32,6 +33,7 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
     {
         interpreter = GetComponent<Interpreter>();
         currentDirectory = Directory.InitializeFileSystem();
+        commandRegistry = new CommandRegistry();
         terminalInput.ActivateInputField();
         terminalInput.Select();
         InitializeThemeManager();
@@ -517,5 +519,9 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
         return themeManager;
     }
 
+    public CommandRegistry GetCommandRegistry()
+    {
+        return commandRegistry;
+    }
 
 }
