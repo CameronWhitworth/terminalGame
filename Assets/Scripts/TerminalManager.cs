@@ -109,7 +109,6 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
                 autocompleteIndex = -1;
             }
         }
-        // Additional functionality for scrolling
         
     }
 
@@ -176,12 +175,12 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
             if (Input.GetKeyDown(KeyCode.UpArrow))
             {
                 // Scroll up the terminal output
-                ScrollTerminal(-1); // Scroll up
+                ScrollTerminal(1); // Scroll up
             }
             else if (Input.GetKeyDown(KeyCode.DownArrow))
             {
                 // Scroll down the terminal output
-                ScrollTerminal(1); // Scroll down
+                ScrollTerminal(-1); // Scroll down
             }
         }
     }

@@ -1344,7 +1344,7 @@ MonoBehaviour:
   m_Inertia: 1
   m_DecelerationRate: 0.135
   m_ScrollSensitivity: 50
-  m_Viewport: {fileID: 0}
+  m_Viewport: {fileID: 292530103}
   m_HorizontalScrollbar: {fileID: 0}
   m_VerticalScrollbar: {fileID: 0}
   m_HorizontalScrollbarVisibility: 0
@@ -3754,6 +3754,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rotationSpeed: 9
+  zoomSpeed: 5
+  zoomedFOV: 30
 --- !u!1 &972690246
 GameObject:
   m_ObjectHideFlags: 0
@@ -4338,7 +4340,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!65 &1101846493
 BoxCollider:
   m_ObjectHideFlags: 0
