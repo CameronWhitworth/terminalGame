@@ -24,6 +24,7 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
     private string currentEditingFile = "";
     public InputField editorInputField;
     public TextEditorManager textEditorManager;
+    private ThemeManager themeManager;
 
     Interpreter interpreter;
 
@@ -33,6 +34,7 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
         currentDirectory = Directory.InitializeFileSystem();
         terminalInput.ActivateInputField();
         terminalInput.Select();
+        InitializeThemeManager();
 
         // Deactivate editor UI and input field
         editorUI.SetActive(false);
@@ -502,6 +504,17 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
     public IReadOnlyList<string> GetCommandHistory()
     {
         return commandHistory.AsReadOnly();
+    }
+
+    private void InitializeThemeManager()
+    {
+        themeManager = new ThemeManager();
+        // Add more themes or configure them here if needed
+    }
+
+    public ThemeManager GetThemeManager()
+    {
+        return themeManager;
     }
 
 
