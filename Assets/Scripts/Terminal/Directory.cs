@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System;
 using UnityEngine;
 
 [System.Serializable]
@@ -7,20 +9,18 @@ public class Directory
 {
     public string name;
     public List<Directory> subDirectories;
-    public List<string> files;
+    public List<FileMetadata> files = new List<FileMetadata>();
     public Directory parent;
     public bool isUserCreated;
-    private Dictionary<string, string> fileContents;
 
     public Dictionary<string, string> aliases = new Dictionary<string, string>();
     public Directory(string name, Directory parent = null, bool isUserCreated = false)
     {
         this.name = name;
         this.subDirectories = new List<Directory>();
-        this.files = new List<string>();
+        this.files = new List<FileMetadata>();
         this.parent = parent;
         this.isUserCreated = isUserCreated;
-        this.fileContents = new Dictionary<string, string>();
     }
 
     // Add a new subdirectory
@@ -59,7 +59,7 @@ public class Directory
         if (!string.IsNullOrEmpty(content))
         {
             // If content was successfully read, create the file with that content
-            this.CreateFileWithContent(virtualFileName, content);
+            this.CreateFileWithContent(virtualFileName, false, content);
         }
     }
 
@@ -82,22 +82,29 @@ public class Directory
     }
 
     // Create a file in the directory with given content
-    private void CreateFileWithContent(string fileName, string content)
+    // Method to create a file in the directory with given content
+    private void CreateFileWithContent(string fileName, bool isUserCreated, string content)
     {
         if (!fileName.EndsWith(".txt"))
         {
             fileName += ".txt";
         }
-        if (!files.Contains(fileName))
+        // Check if the file already exists based on its name
+        if (!files.Any(f => f.Name == fileName))
         {
-            files.Add(fileName);
-            fileContents[fileName] = content;
+            files.Add(new FileMetadata(fileName, isUserCreated, content));
         }
     }
     // Method to check if a file exists in the current directory
     public bool FileExists(string fileName)
     {
-        return files.Contains(fileName);
+        // Ensure the fileName has the correct extension
+        if (!fileName.EndsWith(".txt"))
+        {
+            fileName += ".txt";
+        }
+        // Search for a file with the matching name
+        return files.Any(file => file.Name == fileName);
     }
 
     // Method to create a new subdirectory
@@ -136,20 +143,23 @@ public class Directory
 
     public string CreateFile(string fileName)
     {
-        // Append .txt if not present, this way is a user adds .txt themself it will be ignored
+        // Append .txt if not present, this way if a user adds .txt themself it will be ignored
         if (!fileName.EndsWith(".txt"))
         {
             fileName += ".txt";
         }
 
-        if (files.Contains(fileName))
+        // Check if the file already exists based on its name
+        if (files.Any(f => f.Name == fileName))
         {
             return "File already exists: " + fileName;
         }
         else
         {
-            files.Add(fileName);
-            fileContents[fileName] = "testing"; // Initialize with empty content
+            // Create a new FileMetadata object for the file, marking it as user-created
+            FileMetadata newFile = new FileMetadata(fileName, true, "testing"); // Initialize with some default content
+            files.Add(newFile);
+
             return "File created: " + fileName;
         }
     }
@@ -157,9 +167,12 @@ public class Directory
     // Method to read a file
     public string ReadFile(string fileName)
     {
-        if (files.Contains(fileName))
+        // Search for the file by name in the list of FileMetadata objects
+        var file = files.FirstOrDefault(f => f.Name == fileName);
+        if (file != null)
         {
-            return fileContents[fileName];
+            // If the file is found, return its content
+            return file.Content;
         }
         else
         {
@@ -167,19 +180,23 @@ public class Directory
         }
     }
 
-    // Method to delete a file
+
+    // Method to delete a file with protection check
     public string DeleteFile(string fileName)
     {
-        // Check if the file exists
-        if (files.Contains(fileName))
+        var fileToDelete = files.FirstOrDefault(f => f.Name == fileName);
+        if (fileToDelete == null)
         {
-            files.Remove(fileName);
-            fileContents.Remove(fileName); // Remove file content if stored
-            return "File deleted: " + fileName;
+            return "File not found: " + fileName;
+        }
+        else if (!fileToDelete.IsUserCreated)
+        {
+            return "Cannot delete system file: " + fileName;
         }
         else
         {
-            return "File not found: " + fileName;
+            files.Remove(fileToDelete);
+            return "File deleted: " + fileName;
         }
     }
 
@@ -274,11 +291,21 @@ public class Directory
 
     public void SaveFileContent(string fileName, string content)
     {
-        if (fileContents.ContainsKey(fileName))
+        // Find the file metadata object for the given fileName
+        var fileMetadata = files.FirstOrDefault(f => f.Name == fileName);
+        
+        // If the file is found, update its content
+        if (fileMetadata != null)
         {
-            fileContents[fileName] = content;
+            fileMetadata.Content = content;
+        }
+        else
+        {
+            // Optionally, handle the case where the file does not exist
+            Debug.LogError($"File not found: {fileName}");
         }
     }
+
 
     
 }

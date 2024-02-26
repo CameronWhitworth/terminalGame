@@ -25,6 +25,7 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
     public InputField editorInputField;
     public TextEditorManager textEditorManager;
     private ThemeManager themeManager;
+    private CommandRegistry commandRegistry;
 
     Interpreter interpreter;
 
@@ -32,6 +33,7 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
     {
         interpreter = GetComponent<Interpreter>();
         currentDirectory = Directory.InitializeFileSystem();
+        commandRegistry = new CommandRegistry();
         terminalInput.ActivateInputField();
         terminalInput.Select();
         InitializeThemeManager();
@@ -142,7 +144,7 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
         {
             // Populate or repopulate the autocomplete options based on the last word
             autocompleteOptions = currentDirectory.subDirectories.Select(d => d.name + "/")
-                .Concat(currentDirectory.files)
+                .Concat(currentDirectory.files.Select(f => f.Name))
                 .Where(name => name.StartsWith(lastWord))
                 .ToList();
 
@@ -150,7 +152,7 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
             if (string.IsNullOrEmpty(lastWord))
             {
                 autocompleteOptions = autocompleteOptions.Concat(currentDirectory.subDirectories.Select(d => d.name + "/"))
-                    .Concat(currentDirectory.files)
+                    .Concat(currentDirectory.files.Select(f => f.Name))
                     .ToList();
             }
 
@@ -517,5 +519,9 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
         return themeManager;
     }
 
+    public CommandRegistry GetCommandRegistry()
+    {
+        return commandRegistry;
+    }
 
 }
