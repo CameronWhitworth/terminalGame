@@ -26,6 +26,11 @@ public class CommandRegistry
         commands.Add("touch", new TouchCommand());
         commands.Add("edit", new EditCommand());
         commands.Add("history", new HistoryCommand());
+        commands.Add("tree", new TreeCommand());
+        commands.Add("sys", new SysInfoCommand());
+        commands.Add("sysinfo", new SysInfoCommand());
+        commands.Add("system", new SysInfoCommand());
+        commands.Add("man", new ManCommand());
     }
 
     public ICommand GetCommand(string commandName)

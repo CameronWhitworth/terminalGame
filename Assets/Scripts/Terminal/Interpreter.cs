@@ -44,29 +44,6 @@ public class Interpreter : MonoBehaviour
         }
     }
 
-    // public List<string> Interpret(string userInput)
-    // {
-    //     response.Clear();
-
-    //     string[] args = userInput.Split();
-
-    //     // if(args[0] == "boop")
-    //     // {
-    //     //     response.Add("Damn that's so cool u typed boop");
-    //     //     return response;
-    //     // }
-    //     if(args[0] == "ascii")
-    //     {
-    //         LoadTitle("test.txt", "red", 2);
-    //         return response;
-    //     }
-    //     if (args[0] == "clear")
-    //     {
-    //         terminalManager.ClearScreen();
-    //         response.Add("Screen cleared.");
-    //         return response;
-    //     }
-    // }
 
     public string ColorString(string s, string color)
     {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using System;
 using System.Linq;
 
 public class TerminalManager : MonoBehaviour, IPointerClickHandler
@@ -67,23 +68,94 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
 
     private void ExecuteInput(string input)
     {
-        // Store command in history and reset history index to the end
+        // Existing history management and input field clearing logic...
         commandHistory.Add(input);
         if (commandHistory.Count > 250)
         {
-            commandHistory.RemoveAt(0); // Remove the oldest entry to maintain a max size of 100
+            commandHistory.RemoveAt(0); // Maintain history size
         }
         historyIndex = commandHistory.Count;
-
         ClearInputField();
+        AddDirectoryLine(input); // Adds the user input as a directory line
 
-        AddDirectoryLine(input);
-
-        // Add interpreter/response line
+        // Interpret the command and get the response lines
         List<string> interpretationLines = interpreter.Interpret(input);
+        List<string> processedLines = new List<string>();
 
-        // Scroll to bottom
-        StartCoroutine(AddLinesWithDelay(interpretationLines));
+        // Process each interpretation line to handle long responses
+        foreach (var line in interpretationLines)
+        {
+            // Split long lines and add them to the processedLines list
+            processedLines.AddRange(SplitIntoLines(line, CalculateMaxChars()));
+        }
+
+        // Use AddLinesWithDelay to display all processed lines
+        StartCoroutine(AddLinesWithDelay(processedLines));
+
+        // You might need to adjust SmoothScrollToBottom or its calling logic if necessary
+    }
+
+    private List<string> SplitIntoLines(string response, int maxCharsPerLine)
+    {
+        List<string> lines = new List<string>();
+        string currentLine = "";
+        int currentLineCharCount = 0; // Counts characters excluding rich text tags
+        int currentIndex = 0;
+        
+        while (currentIndex < response.Length)
+        {
+            // Check for a rich text tag start
+            if (response[currentIndex] == '<')
+            {
+                // Find the end of the rich text tag
+                int tagCloseIndex = response.IndexOf('>', currentIndex);
+                if (tagCloseIndex != -1)
+                {
+                    // Add the entire tag to the current line without affecting the character count
+                    string tag = response.Substring(currentIndex, tagCloseIndex - currentIndex + 1);
+                    currentLine += tag;
+                    currentIndex = tagCloseIndex + 1; // Move past the tag
+
+                    // Check if it's a closing tag, and if so, reset formatting if needed
+                    if (tag.StartsWith("</"))
+                    {
+                        // Logic to handle resetting formatting if necessary
+                    }
+
+                    continue; // Move to the next character/tag
+                }
+            }
+
+            // Add the character to the current line and increment counters
+            currentLine += response[currentIndex];
+            currentLineCharCount++;
+            currentIndex++;
+
+            // If the current line reaches the max character count or the end of the response
+            if (currentLineCharCount >= maxCharsPerLine || currentIndex >= response.Length)
+            {
+                lines.Add(currentLine); // Add the current line to the list
+                currentLine = ""; // Reset for the next line
+                currentLineCharCount = 0;
+            }
+        }
+
+        // Add any remaining text to the last line
+        if (!string.IsNullOrEmpty(currentLine))
+        {
+            lines.Add(currentLine);
+        }
+
+        return lines;
+    }
+
+
+    private int CalculateMaxChars()
+    {
+        // If textsize changing is added this function cant be static
+        // Return the estimated max number of characters per line
+        // This will need adjustment based on your UI setup
+        return 80; // Example value, adjust as necessary
     }
 
     void Update()
