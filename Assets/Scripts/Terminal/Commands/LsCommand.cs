@@ -19,7 +19,7 @@ public class LsCommand : ICommand
         foreach (var file in currentDirectory.files)
         {
             string fileColor = themeManager.GetColor("file");
-            response.Add(ColorString(file, fileColor));
+            response.Add(ColorString(file.Name, fileColor));
         }
 
         if (response.Count == 0)

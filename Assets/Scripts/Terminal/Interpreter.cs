@@ -76,11 +76,6 @@ public class Interpreter : MonoBehaviour
         return leftTag + s + rightTag;
     }
 
-    void ColorListEntry(string a, string b)
-    {
-        response.Add(ColorString(a, colors["red"]) + ": " + ColorString(b, colors["yellow"]));
-    }
-
     void LoadTitle(string path, string color, int spacing)
     {
         StreamReader file = new StreamReader(Path.Combine(Application.streamingAssetsPath, path));

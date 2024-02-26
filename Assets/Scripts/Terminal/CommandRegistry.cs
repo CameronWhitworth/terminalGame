@@ -10,6 +10,7 @@ public class CommandRegistry
     {
         // Register all commands
         commands.Add("help", new HelpCommand());
+        commands.Add("ascii", new AsciiCommand());
         commands.Add("ls", new LsCommand());
         commands.Add("color", new SwitchThemeCommand());
         commands.Add("alias", new AliasCommand());
@@ -25,7 +26,6 @@ public class CommandRegistry
         commands.Add("touch", new TouchCommand());
         commands.Add("edit", new EditCommand());
         commands.Add("history", new HistoryCommand());
-        // Add other commands here
     }
 
     public ICommand GetCommand(string commandName)
