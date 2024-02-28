@@ -4,18 +4,26 @@ using UnityEngine;
 
 public class ColorTheme
 {
-    public string Name { get; set; }
-    public Dictionary<string, string> Colors { get; set; }
+    public string Name { get; private set; }
+    public Dictionary<string, string> Colors { get; private set; }
+
+    // Add a property for default color
+    public string DefaultColor { get; set; }
 
     public ColorTheme(string name)
     {
         Name = name;
         Colors = new Dictionary<string, string>();
+        DefaultColor = "#FAA112"; // Set a default color for text, e.g., white
     }
 
     public string GetColor(string key)
     {
-        Colors.TryGetValue(key, out string color);
-        return color ?? "#FFFFFF"; // Default color if not found
+        if (Colors.TryGetValue(key, out string value))
+        {
+            return value;
+        }
+
+        return DefaultColor; // Fallback to default color if the key is not found
     }
 }

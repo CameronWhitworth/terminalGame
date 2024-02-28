@@ -282,7 +282,7 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
         }
         else
         {
-            AddInterpreterLines(new List<string> { "File not found: " + fileName });
+            StartCoroutine(AddLinesWithDelay(new List<string> { "File not found: " + currentEditingFile }));
             dirResponse = "File not found: " + fileName ;
             return;
         }
@@ -291,10 +291,11 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
     // Call this method when the 'save' command is entered
     public void SaveEditedFile()
     {
-
         currentDirectory.SaveFileContent(currentEditingFile, editorInputField.text);
         isInEditorMode = false;
-        int lines = AddInterpreterLines(new List<string> { "File saved: " + currentEditingFile });
+
+        // Start the coroutine without trying to capture its return value
+        StartCoroutine(AddLinesWithDelay(new List<string> { "File saved: " + currentEditingFile }));
 
         // Deactivate the editor input field
         textEditorManager.editorInputField.gameObject.SetActive(false);
@@ -316,7 +317,7 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
         isInEditorMode = false;
         editorUI.SetActive(false); // Hide the editor UI
         commandLineUI.SetActive(true); // Re-enable the command line UI
-        int lines = AddInterpreterLines(new List<string> { "Editing cancelled." });
+        StartCoroutine(AddLinesWithDelay(new List<string> { "Canceled editing: " + currentEditingFile }));
         // Deactivate the editor input field
         textEditorManager.editorInputField.gameObject.SetActive(false);
         textEditorManager.DeactivateEditor();
@@ -381,32 +382,17 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
         //Instantiate the dir line
         GameObject msg = Instantiate(directoryLine, msgList.transform);
 
+        Text textComponent = msg.GetComponentInChildren<Text>();
+        if (textComponent != null)
+        {
+            themeManager.ApplyColorToText(textComponent); // Update this line's color
+        }
+
         //Set it's child index
         msg.transform.SetSiblingIndex(msgList.transform.childCount - 1);
 
         //Set Text of the new game object instantiated above
         msg.GetComponentsInChildren<Text>()[1].text = userInput;
-    }
-
-    int AddInterpreterLines(List<string> interpretation)
-    {
-        for(int i = 0; i < interpretation.Count; i++)
-        {
-            //Create responce line
-            GameObject res = Instantiate(responceLine, msgList.transform);
-
-            //Set it at the end of all messages
-            res.transform.SetAsLastSibling();
-
-            //Set size of message list and resize
-            Vector2 listSize = msgList.GetComponent<RectTransform>().sizeDelta;
-            msgList.GetComponent<RectTransform>().sizeDelta = new Vector2(listSize.x, listSize.y + 35.0f);
-
-            //Set text of response line
-            res.GetComponentInChildren<Text>().text = interpretation[i];
-        }
-
-        return interpretation.Count;
     }
 
     IEnumerator SmoothScrollToBottom()
@@ -451,6 +437,13 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
         {
             // Create response line
             GameObject res = Instantiate(responceLine, msgList.transform);
+
+            // Apply theme to the new text element
+            Text textComponent = res.GetComponentInChildren<Text>();
+            if (textComponent != null)
+            {
+                themeManager.ApplyColorToText(textComponent); // Update this line's color
+            }
 
             // Set it at the end of all messages
             res.transform.SetAsLastSibling();
@@ -594,6 +587,18 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
     public CommandRegistry GetCommandRegistry()
     {
         return commandRegistry;
+    }
+
+    private void ChangeTheme(string themeName)
+    {
+        // Just call SetTheme with the theme name
+        bool themeSet = themeManager.SetTheme(themeName);
+        
+        // Handle the result of the theme change
+        if (!themeSet)
+        {
+            Debug.LogError("Theme change failed: Theme not found.");
+        }
     }
 
 }

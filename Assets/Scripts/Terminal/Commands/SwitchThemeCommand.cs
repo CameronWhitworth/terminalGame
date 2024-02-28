@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI; 
 
 public class SwitchThemeCommand : ICommand
 {

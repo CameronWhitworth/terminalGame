@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class ThemeManager
 {
+    public GameObject responceLinePrefab;
     private List<ColorTheme> themes = new List<ColorTheme>();
     private ColorTheme currentTheme;
 
@@ -18,6 +20,7 @@ public class ThemeManager
     {
         // Dark Theme
         var darkTheme = new ColorTheme("Dark");
+        darkTheme.DefaultColor = "#FFFFFF"; 
         darkTheme.Colors.Add("directory", "#4E9A06"); // Green directories
         darkTheme.Colors.Add("file", "#729FCF"); // Blue files
         darkTheme.Colors.Add("command", "#C4A000"); // Yellow-ish color for command
@@ -26,6 +29,7 @@ public class ThemeManager
 
         // Light Theme
         var lightTheme = new ColorTheme("Light");
+        lightTheme.DefaultColor = "#000000";
         lightTheme.Colors.Add("directory", "#005577"); // Darker blue directories
         lightTheme.Colors.Add("file", "#2E3436"); // Almost black files
         lightTheme.Colors.Add("command", "#4E9A06"); // Green for commands
@@ -35,6 +39,7 @@ public class ThemeManager
 
         // Retro Theme
         var retroTheme = new ColorTheme("Retro");
+        retroTheme.DefaultColor = "#CE5C00";
         retroTheme.Colors.Add("directory", "#FFB347"); // Orange directories
         retroTheme.Colors.Add("file", "#FFD700"); // Gold files
         retroTheme.Colors.Add("command", "#D3D7CF"); // Light grey for commands
@@ -51,9 +56,39 @@ public class ThemeManager
         if (theme != null)
         {
             currentTheme = theme;
+            ApplyThemeToTerminal(); // Apply theme colors inside this method
             return true; // Theme found and set
         }
         return false; // Theme not found
+    }
+
+    private void ApplyThemeToTerminal()
+    {
+        // Find all Text components in children of a certain GameObject
+        Text[] textElements = GameObject.Find("Terminal").GetComponentsInChildren<Text>();
+
+        foreach (var textElement in textElements)
+        {
+            if (textElement.name == "ResponceText" || textElement.name == "DirectoryText" || textElement.name == "UserInputText") // Use the specific name to identify your text elements
+            {
+                // Apply the color
+                string hexColor = currentTheme.GetColor("default"); // Use the key for your default color
+                Color newColor;
+                if (ColorUtility.TryParseHtmlString(hexColor, out newColor))
+                {
+                    textElement.color = newColor;
+                }
+            } 
+        }
+    }
+
+    public void ApplyColorToText(Text textElement, string elementType = "default")
+    {
+        string hexColor = GetColor(elementType); // Get color based on element type, default if not specified
+        if (ColorUtility.TryParseHtmlString(hexColor, out Color newColor))
+        {
+            textElement.color = newColor;
+        }
     }
 
     public IEnumerable<string> GetAllThemeNames()
