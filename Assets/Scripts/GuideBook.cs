@@ -24,6 +24,10 @@ public class GuideBook : MonoBehaviour, IPointerClickHandler, IPointerEnterHandl
     public DialogueRunner dialogueRunner;
     private InMemoryVariableStorage variableStorage;
 
+    private bool isRotatingWithLeftMouse = false;
+    private float leftMousePressTime = 0;
+    private const float holdThreshold = 0.1f; // Threshold in seconds to differentiate between click and hold
+
     // Static variable to track the currently picked up item
     private static GuideBook currentlyPickedUpItem = null;
 
@@ -38,12 +42,12 @@ public class GuideBook : MonoBehaviour, IPointerClickHandler, IPointerEnterHandl
 
     void Update()
     {
-        HandleRightClickRotation();
+        HandleLeftMouseRotation();
     }
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        if (eventData.button == PointerEventData.InputButton.Left && !isMoving && !isRotatingBack)
+        if (eventData.button == PointerEventData.InputButton.Left && !isMoving && !isRotatingBack && !isRotatingWithLeftMouse)
         {
             // Automatically put down the current item if a different one is clicked
             if (currentlyPickedUpItem != null && currentlyPickedUpItem != this)
@@ -164,22 +168,34 @@ public class GuideBook : MonoBehaviour, IPointerClickHandler, IPointerEnterHandl
         }
     }
 
-    private void HandleRightClickRotation()
+     private void HandleLeftMouseRotation()
     {
-        if (isAtTarget && Input.GetMouseButton(1) && !isRotatingBack && !isMoving)
+        if (isAtTarget && Input.GetMouseButtonDown(0) && !isRotatingBack && !isMoving)
         {
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
-            float mouseX = Input.GetAxis("Mouse X") * (rotationSpeed * 0.35f);
-            float mouseY = -Input.GetAxis("Mouse Y") * (rotationSpeed * 0.35f);
-            transform.Rotate(Vector3.up, mouseX, Space.World);
-            transform.Rotate(Vector3.right, mouseY, Space.World);
+            leftMousePressTime = Time.time; // Start timing the press duration
         }
 
-        if (isAtTarget && Input.GetMouseButtonUp(1) && !isRotatingBack)
+        if (isAtTarget && Input.GetMouseButton(0) && !isRotatingBack && !isMoving)
         {
+            if (Time.time - leftMousePressTime > holdThreshold)
+            {
+                // It's a hold, enable rotation
+                isRotatingWithLeftMouse = true;
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
+                float mouseX = Input.GetAxis("Mouse X") * (rotationSpeed * 0.35f);
+                float mouseY = -Input.GetAxis("Mouse Y") * (rotationSpeed * 0.35f);
+                transform.Rotate(Vector3.up, mouseX, Space.World);
+                transform.Rotate(Vector3.right, mouseY, Space.World);
+            }
+        }
+
+        if (isAtTarget && Input.GetMouseButtonUp(0) && isRotatingWithLeftMouse)
+        {
+            // End rotation
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
+            isRotatingWithLeftMouse = false;
             if (rotateBackCoroutine != null)
             {
                 StopCoroutine(rotateBackCoroutine);
