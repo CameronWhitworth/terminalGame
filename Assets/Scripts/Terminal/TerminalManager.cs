@@ -27,6 +27,10 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
     public TextEditorManager textEditorManager;
     private ThemeManager themeManager;
     private CommandRegistry commandRegistry;
+    private bool isAwaitingPassword = false;
+    private string awaitingPasswordForFile = "";
+    private Action<bool> onPasswordEnteredCallback;
+    public delegate void PasswordInputCallback(bool isCorrect);
 
     Interpreter interpreter;
 
@@ -66,33 +70,89 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
         }
     }
 
+
+
+    // This method is invoked when a password input is required.
+    public void EnablePasswordInputMode(string fileName, Action<bool> callback)
+    {
+        isAwaitingPassword = true;
+        awaitingPasswordForFile = fileName;
+        onPasswordEnteredCallback = callback;
+
+        // Prompt user to enter password (you could update UI or print a message)
+       StartCoroutine(AddLinesWithDelay(new List<string> {"Password required to access file. Please enter password:"}));
+    }
+    
     private void ExecuteInput(string input)
     {
-        // Existing history management and input field clearing logic...
-        commandHistory.Add(input);
-        if (commandHistory.Count > 250)
+
+
+        if (isAwaitingPassword)
         {
-            commandHistory.RemoveAt(0); // Maintain history size
+            // Handle password input
+            ProcessPasswordInput(input);
         }
-        historyIndex = commandHistory.Count;
+        else
+        {
+            // Existing history management and input field clearing logic...
+            commandHistory.Add(input);
+            if (commandHistory.Count > 250)
+            {
+                commandHistory.RemoveAt(0); // Maintain history size
+            }
+            historyIndex = commandHistory.Count;
+            ClearInputField();
+            AddDirectoryLine(input); // Adds the user input as a directory line
+
+            // Interpret the command and get the response lines
+            List<string> interpretationLines = interpreter.Interpret(input);
+            List<string> processedLines = new List<string>();
+
+            // Process each interpretation line to handle long responses
+            foreach (var line in interpretationLines)
+            {
+                // Split long lines and add them to the processedLines list
+                processedLines.AddRange(SplitIntoLines(line, CalculateMaxChars()));
+            }
+
+            // Use AddLinesWithDelay to display all processed lines
+            StartCoroutine(AddLinesWithDelay(processedLines));
+        }
+    }
+
+
+
+    private void ProcessPasswordInput(string input)
+    {
+        var fileMetadata = currentDirectory.GetFileMetadata(awaitingPasswordForFile);
+        if (fileMetadata != null && input == fileMetadata.Password)
+        {
+            onPasswordEnteredCallback?.Invoke(true);
+        }
+        else
+        {
+            onPasswordEnteredCallback?.Invoke(false);
+        }
+
+        // Reset password mode
+        isAwaitingPassword = false;
+        awaitingPasswordForFile = "";
+        onPasswordEnteredCallback = null;
+
+        // Clear input field to ready for next command
         ClearInputField();
-        AddDirectoryLine(input); // Adds the user input as a directory line
+    }
 
-        // Interpret the command and get the response lines
-        List<string> interpretationLines = interpreter.Interpret(input);
-        List<string> processedLines = new List<string>();
-
-        // Process each interpretation line to handle long responses
-        foreach (var line in interpretationLines)
-        {
-            // Split long lines and add them to the processedLines list
-            processedLines.AddRange(SplitIntoLines(line, CalculateMaxChars()));
+    public void RequestPasswordInput(string fileName, Action<bool> onPasswordVerified) {
+        var fileMetadata = GetCurrentDirectory().GetFileMetadata(fileName);
+        if (fileMetadata == null || !fileMetadata.IsPasswordProtected) {
+            onPasswordVerified?.Invoke(false);
+            return;
         }
 
-        // Use AddLinesWithDelay to display all processed lines
-        StartCoroutine(AddLinesWithDelay(processedLines));
-
-        // You might need to adjust SmoothScrollToBottom or its calling logic if necessary
+        EnablePasswordInputMode(fileName, isCorrect => {
+            onPasswordVerified.Invoke(isCorrect);
+        });
     }
 
     private List<string> SplitIntoLines(string response, int maxCharsPerLine)
@@ -427,7 +487,7 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
         sr.verticalNormalizedPosition = Mathf.Clamp01(sr.verticalNormalizedPosition + scrollStep * direction);
     }
 
-    IEnumerator AddLinesWithDelay(List<string> lines)
+    public IEnumerator AddLinesWithDelay(List<string> lines)
     {
         // Disable user input at the start
         terminalInput.interactable = false;
@@ -600,5 +660,4 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
             Debug.LogError("Theme change failed: Theme not found.");
         }
     }
-
 }

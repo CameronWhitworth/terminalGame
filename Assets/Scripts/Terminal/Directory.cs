@@ -38,10 +38,11 @@ public class Directory
 
         // Create 'documents' directory with two subdirectories
         root.AddSubDirectory("documents");
-        root.AddTextFileFromRealFile("exampleFile", "test.txt");
+        root.AddTextFileFromRealFile("testFile", "test.txt");
         Directory documents = root.subDirectories.Find(d => d.name == "documents");
         documents.AddSubDirectory("folder1");
-        documents.AddTextFileFromRealFile("exampleFile", "beowulf.txt");
+        documents.AddTextFileFromRealFile("examplePassword", "beowulf.txt", "test");
+        documents.AddTextFileFromRealFile("exampleNoPassword", "beowulf.txt");
         documents.AddSubDirectory("folder2");
 
         // Create 'id' directory with a text file
@@ -53,13 +54,13 @@ public class Directory
     }
 
     // Method to add a text file with content from a real file within the Unity project's StreamingAssets folder
-    public void AddTextFileFromRealFile(string virtualFileName, string realFilePath)
+    public void AddTextFileFromRealFile(string virtualFileName, string realFilePath, string password = null)
     {
         string content = ReadContentFromRealFile(realFilePath);
         if (!string.IsNullOrEmpty(content))
         {
             // If content was successfully read, create the file with that content
-            this.CreateFileWithContent(virtualFileName, false, content);
+            this.CreateFileWithContent(virtualFileName, false, content, password);
         }
     }
 
@@ -83,7 +84,7 @@ public class Directory
 
     // Create a file in the directory with given content
     // Method to create a file in the directory with given content
-    private void CreateFileWithContent(string fileName, bool isUserCreated, string content)
+    private void CreateFileWithContent(string fileName, bool isUserCreated, string content, string password = null)
     {
         if (!fileName.EndsWith(".txt"))
         {
@@ -92,7 +93,12 @@ public class Directory
         // Check if the file already exists based on its name
         if (!files.Any(f => f.Name == fileName))
         {
-            files.Add(new FileMetadata(fileName, isUserCreated, content));
+            var newFile = new FileMetadata(fileName, isUserCreated, content)
+            {
+                //IsPasswordProtected = !string.IsNullOrEmpty(password),
+                Password = password ?? ""
+            };
+            files.Add(newFile);
         }
     }
     // Method to check if a file exists in the current directory
@@ -307,5 +313,18 @@ public class Directory
     }
 
 
-    
+    public FileMetadata GetFileMetadata(string fileName)
+    {
+        // Ensure the fileName has the correct extension for consistency
+        if (!fileName.EndsWith(".txt"))
+        {
+            fileName += ".txt";
+        }
+
+        // Attempt to find the file with the specified name
+        var file = files.FirstOrDefault(f => f.Name == fileName);
+
+        // If found, return the FileMetadata object; otherwise, return null
+        return file;
+    }
 }

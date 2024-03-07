@@ -4,13 +4,10 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using System.IO;
-
 public class OpenCommand : ICommand
 {
-    
     public List<string> Execute(string[] args, TerminalManager terminalManager)
     {
-        List<string> response = new List<string>();
         if (args.Length > 1)
         {
             string fileName = args[1];
@@ -20,25 +17,45 @@ public class OpenCommand : ICommand
                 fileName += ".txt";
             }
 
-            string fileContent = terminalManager.GetCurrentDirectory().ReadFile(fileName);
-            if (fileContent == "File not found: " + fileName)
+            var fileMetadata = terminalManager.GetCurrentDirectory().GetFileMetadata(fileName);
+            if (fileMetadata == null)
             {
-                response.Add(fileContent);
+                terminalManager.AddLinesWithDelay(new List<string> { "File not found: " + fileName });
+                return new List<string>(); // Immediate return since AddLinesWithDelay handles the message
+            }
+
+            // Check if the file is password protected and if the terminal is not already awaiting password
+            if (fileMetadata.IsPasswordProtected)
+            {
+                // Assuming fileMetadata has a property like .Name or similar that contains the filename
+                string fileMetaName = fileMetadata.Name;
+                terminalManager.RequestPasswordInput(fileMetaName, isSuccess =>
+                {
+                    if (isSuccess)
+                    {
+                        // Password correct, read and display the file content
+                        string[] lines = fileMetadata.Content.Split(new[] { "\r\n", "\r", "\n" }, System.StringSplitOptions.None);
+                        terminalManager.StartCoroutine(terminalManager.AddLinesWithDelay(new List<string>(lines)));
+
+                    }
+                    else
+                    {
+                        terminalManager.StartCoroutine(terminalManager.AddLinesWithDelay(new List<string> { "Incorrect password. Access denied. Run command again." }));
+                    }
+                });
             }
             else
             {
-                string[] lines = fileContent.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
-                foreach (string line in lines)
-                {
-                    // Add each line to the response list
-                    response.Add(line);
-                }
+                string[] lines = fileMetadata.Content.Split(new[] { "\r\n", "\r", "\n" }, System.StringSplitOptions.None);
+                terminalManager.StartCoroutine(terminalManager.AddLinesWithDelay(new List<string>(lines)));
             }
         }
         else
         {
-            response.Add("ERROR: File name not specified");
+            terminalManager.StartCoroutine(terminalManager.AddLinesWithDelay(new List<string> { "ERROR: File name not specified" }));    
         }
-        return response;
+        return new List<string>(); // The actual output is handled asynchronously
+
+
     }
 }

@@ -31,6 +31,7 @@ public class CommandRegistry
         commands.Add("sysinfo", new SysInfoCommand());
         commands.Add("system", new SysInfoCommand());
         commands.Add("man", new ManCommand());
+        commands.Add("pass", new PasswordCommand());
     }
 
     public ICommand GetCommand(string commandName)
