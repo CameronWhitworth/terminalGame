@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 public class CopyCommand : ICommand
@@ -28,7 +29,7 @@ public class CopyCommand : ICommand
         // Check if destination is a directory or a file
         Directory currentDirectory = terminalManager.GetCurrentDirectory();
         Directory destinationDir = null;
-        string destinationFileName = sourcePath;
+        string destinationFileName = "";
 
         // If destinationPath includes "/", it might be a path or a new file name in a subdirectory
         if (destinationPath.Contains("/"))
@@ -36,7 +37,13 @@ public class CopyCommand : ICommand
             string[] pathParts = destinationPath.Split('/');
             string dirPath = string.Join("/", pathParts, 0, pathParts.Length - 1);
             destinationDir = currentDirectory.FindSubDirectoryByPath(dirPath);
-            destinationFileName = pathParts[pathParts.Length - 1];
+            destinationFileName = pathParts[pathParts.Length - 1].Trim();
+
+            // If the destination file name is empty, use the source file's name
+            if (string.IsNullOrEmpty(destinationFileName))
+            {
+                destinationFileName = sourceFileMetadata.Name; // Use the original file name
+            }
 
             // If destinationDir is null, then the directory was not found
             if (destinationDir == null)
@@ -47,17 +54,26 @@ public class CopyCommand : ICommand
         }
         else
         {
-            // If no "/" in destinationPath, it's a file name in the current directory
-            destinationFileName = destinationPath;
+            destinationFileName = destinationPath.Trim();
+
+            // If destination file name is empty, use the source file's name
+            if (string.IsNullOrEmpty(destinationFileName))
+            {
+                destinationFileName = sourceFileMetadata.Name; // Use the original file name
+            }
+
             destinationDir = currentDirectory;
         }
 
         // At this point, destinationDir should not be null
-        if (destinationDir != null)
+       if (destinationDir != null)
         {
-            // Copy the file with password protection if it has one
-            destinationDir.CreateFileWithContent(destinationFileName, sourceFileMetadata.IsUserCreated, sourceFileMetadata.Content, sourceFileMetadata.Password);
-            response.Add($"File '{sourcePath}' copied to '{destinationPath}' with the same password protection.");
+            // Generate a unique file name to avoid conflicts
+            string uniqueDestinationFileName = GetUniqueFileName(destinationDir, destinationFileName);
+
+            // Copy the file with password protection if it has one, using the unique file name
+            destinationDir.CreateFileWithContent(uniqueDestinationFileName, sourceFileMetadata.IsUserCreated, sourceFileMetadata.Content, sourceFileMetadata.Password);
+            response.Add($"File '{sourcePath}' copied to '{uniqueDestinationFileName}'");
         }
         else
         {
@@ -66,4 +82,29 @@ public class CopyCommand : ICommand
 
         return response;
     }
+
+    private string GetUniqueFileName(Directory destinationDir, string originalName)
+    {
+        string baseName = originalName;
+        string extension = ".txt"; // Assuming all files have .txt extension for simplicity
+
+        // Remove the extension for processing
+        if (baseName.EndsWith(extension))
+        {
+            baseName = baseName.Substring(0, baseName.Length - extension.Length);
+        }
+
+        string newName = originalName;
+        int counter = 1;
+
+        // Check if the file exists, and if so, generate a new name
+        while (destinationDir.FileExists(newName))
+        {
+            newName = $"{baseName}({counter}){extension}";
+            counter++;
+        }
+
+        return newName;
+    }
+
 }
