@@ -30,6 +30,42 @@ public class Directory
         subDirectories.Add(newDir);
     }
 
+    public Directory GetSubDirectory(string name)
+    {
+        // Iterate over subDirectories to find a match by name
+        foreach (var subDir in subDirectories)
+        {
+            if (subDir.name == name)
+            {
+                return subDir;
+            }
+        }
+
+        // No matching subdirectory found
+        return null;
+    }
+
+    public Directory FindSubDirectoryByPath(string path)
+    {
+        string[] parts = path.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+        Directory current = this; // Start from the current directory
+
+        foreach (string part in parts)
+        {
+            // Try to get the next subdirectory in the path
+            Directory next = current.GetSubDirectory(part);
+            if (next == null)
+            {
+                // If any part of the path doesn't exist, return null
+                return null;
+            }
+            current = next; // Move to the next part of the path
+        }
+
+        // Return the directory found at the end of the path
+        return current;
+    }
+
     // Initialize a basic file system
     public static Directory InitializeFileSystem()
     {
@@ -84,7 +120,7 @@ public class Directory
 
     // Create a file in the directory with given content
     // Method to create a file in the directory with given content
-    private void CreateFileWithContent(string fileName, bool isUserCreated, string content, string password = null)
+    public void CreateFileWithContent(string fileName, bool isUserCreated, string content, string password = null)
     {
         if (!fileName.EndsWith(".txt"))
         {

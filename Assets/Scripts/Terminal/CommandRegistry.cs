@@ -36,6 +36,7 @@ public class CommandRegistry
         commands.Add("whereami", new PwdCommand());
         commands.Add("pwd", new PwdCommand());
         commands.Add("calc", new CalcCommand());
+        commands.Add("cp", new CopyCommand());
     }
 
     public ICommand GetCommand(string commandName)
