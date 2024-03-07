@@ -23,7 +23,9 @@ public class ManCommand : ICommand
             {"edit", "NAME:\n     edit\nSYNOPSIS:\n     edit <file>\nDESCRIPTION:\n      Opens the specified file for editing. Allows the user to modify the contents of a file within the terminal environment. This command integrates with a simple text editor for improved in-terminal editing experiences."},
             {"history", "NAME:\n     history\nSYNOPSIS:\n       history <num>\nDESCRIPTION:\n      Displays the list of commands that have been entered in the current session. Useful for reviewing or repeating past commands. A value argument can be passed to print out a specified number of previous command"},
             {"tree", "NAME:\n     tree\nDESCRIPTION:\n      Displays a tree structure of the directory and its subdirectories, providing a visual representation of the filesystem's hierarchy."},
-            {"sys", "NAME:\n     sys\nDESCRIPTION:\n      Displays system information including OS version, memory usage, and CPU details. Can also be used as 'sysinfo' or 'system' to access this information."}
+            {"sys", "NAME:\n     sys\nDESCRIPTION:\n      Displays system information including OS version, memory usage, and CPU details. Can also be used as 'sysinfo' or 'system' to access this information."},
+            {"calc", "NAME:\n     calc\nSYNOPSIS:\n     calc <expression>\nDESCRIPTION:\n      Evaluates the mathematical expression provided as <expression> and returns the result. Supports basic arithmetic operations like addition (+), subtraction (-), multiplication (*), and division (/). Example usage: 'calc 1 + 2'."},
+            {"pass", "NAME:\n     pass\nSYNOPSIS:\n     pass <filename> [newPassword]\nDESCRIPTION:\n      Manages the password protection for a file. If [newPassword] is provided, it sets a new password for the file specified by <filename>. If [newPassword] is not provided, it removes the existing password from the file. To change an existing password, the correct current password must be provided first."}
         };
     }
 

@@ -32,8 +32,10 @@ public class CommandRegistry
         commands.Add("system", new SysInfoCommand());
         commands.Add("man", new ManCommand());
         commands.Add("pass", new PasswordCommand());
+        commands.Add("password", new PasswordCommand());
         commands.Add("whereami", new PwdCommand());
         commands.Add("pwd", new PwdCommand());
+        commands.Add("calc", new CalcCommand());
     }
 
     public ICommand GetCommand(string commandName)

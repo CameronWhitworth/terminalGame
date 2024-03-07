@@ -13,13 +13,13 @@ public class HelpCommand : ICommand
         var commands = new Dictionary<string, string>
         {
             {"ls", "List directory contents"},
-            {"cd", "Change the current directory"},
-            {"mkdir", "Create a new directory"},
-            {"rm", "Remove a file or directory"},
-            {"touch", "Create a new file"},
-            {"cat", "Display the contents of a file"},
-            {"echo", "Display a line of text"},
-            {"help", "Show this help message"},
+            {"cd <directory>", "Change the current directory to <directory>"},
+            {"mkdir <directory>", "Create a new directory named <directory>"},
+            {"rm <file>", "Remove a file or directory"},
+            {"touch <file>", "Create a new file named <file>"},
+            {"cat <file>", "Display the contents of <file>"},
+            {"echo <text>", "Display <text>"},
+            {"man <command>", "Display in-depth information of <command>"},
             {"switchtheme", "Switch the terminal color theme"},
             // Add other commands and their descriptions here
         };
