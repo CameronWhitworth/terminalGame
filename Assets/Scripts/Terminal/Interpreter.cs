@@ -39,7 +39,17 @@ public class Interpreter : MonoBehaviour
         }
         else
         {
-            response.Add("ERROR Unknown command, Type 'help' for a list of commands");
+            // Suggest a similar command if available
+            string suggestion = SuggestSimilarCommand(commandName);
+            if (suggestion != null)
+            {
+                response.Add($"ERROR: Unknown command '{commandName}'. Did you mean '{suggestion}'?");
+                response.Add("Type 'help' for a list of commands.");
+            }
+            else
+            {
+                response.Add("ERROR: Unknown command. Type 'help' for a list of commands.");
+            }
             return response;
         }
     }
@@ -82,5 +92,66 @@ public class Interpreter : MonoBehaviour
         {"yellow",  "#f2f1b9"},
         {"blue",    "#9ed9d8"}
     };
+
+    private string SuggestSimilarCommand(string inputCommand)
+    {
+        // Only suggest for commands that are at least 2 characters long
+        if (inputCommand.Length < 2)
+        {
+            return null;
+        }
+
+        var registeredCommands = commandRegistry.GetAllCommands(); // Ensure you have a method to get all registered command names
+        string closestMatch = null;
+        int smallestDistance = int.MaxValue;
+
+        foreach (var command in registeredCommands)
+        {
+            int distance = ComputeLevenshteinDistance(inputCommand, command);
+            if (distance < smallestDistance)
+            {
+                smallestDistance = distance;
+                closestMatch = command;
+            }
+        }
+
+        // Threshold for suggesting a command could be adjusted based on your preference
+        return smallestDistance <= 2 ? closestMatch : null; 
+    }
+
+    private int ComputeLevenshteinDistance(string s, string t)
+    {
+        if (string.IsNullOrEmpty(s))
+        {
+            return string.IsNullOrEmpty(t) ? 0 : t.Length;
+        }
+
+        if (string.IsNullOrEmpty(t))
+        {
+            return s.Length;
+        }
+
+        int[] v0 = new int[t.Length + 1];
+        int[] v1 = new int[t.Length + 1];
+
+        for (int i = 0; i < v0.Length; i++)
+            v0[i] = i;
+
+        for (int i = 0; i < s.Length; i++)
+        {
+            v1[0] = i + 1;
+
+            for (int j = 0; j < t.Length; j++)
+            {
+                int cost = s[i] == t[j] ? 0 : 1;
+                v1[j + 1] = Math.Min(Math.Min(v1[j] + 1, v0[j + 1] + 1), v0[j] + cost);
+            }
+
+            for (int j = 0; j < v0.Length; j++)
+                v0[j] = v1[j];
+        }
+
+        return v1[t.Length];
+    }
 
 }

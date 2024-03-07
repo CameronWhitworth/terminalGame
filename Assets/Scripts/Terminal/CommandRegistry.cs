@@ -32,6 +32,8 @@ public class CommandRegistry
         commands.Add("system", new SysInfoCommand());
         commands.Add("man", new ManCommand());
         commands.Add("pass", new PasswordCommand());
+        commands.Add("whereami", new PwdCommand());
+        commands.Add("pwd", new PwdCommand());
     }
 
     public ICommand GetCommand(string commandName)
@@ -41,5 +43,10 @@ public class CommandRegistry
             return command;
         }
         return null;
+    }
+
+    public IEnumerable<string> GetAllCommands()
+    {
+        return commands.Keys;
     }
 }
