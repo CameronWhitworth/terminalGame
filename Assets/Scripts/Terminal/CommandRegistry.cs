@@ -40,6 +40,7 @@ public class CommandRegistry
         commands.Add("copy", new FileMovementCommand());
         commands.Add("mv", new FileMovementCommand());
         commands.Add("move", new FileMovementCommand());
+        commands.Add("grep", new GrepCommand());
     }
 
     public ICommand GetCommand(string commandName)
