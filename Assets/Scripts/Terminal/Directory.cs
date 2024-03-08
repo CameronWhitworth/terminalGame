@@ -66,6 +66,20 @@ public class Directory
         return current;
     }
 
+    public string GetFullPath()
+    {
+        var pathParts = new List<string>();
+        var current = this;
+        while (current != null)
+        {
+            pathParts.Add(current.name);
+            current = current.parent;
+        }
+        pathParts.Reverse(); // Reverse to get the correct order from root to current
+        return "/" + string.Join("/", pathParts); // Construct the full path string
+    }
+
+
     // Initialize a basic file system
     public static Directory InitializeFileSystem()
     {
@@ -234,6 +248,21 @@ public class Directory
         else if (!fileToDelete.IsUserCreated)
         {
             return "Cannot delete system file: " + fileName;
+        }
+        else
+        {
+            files.Remove(fileToDelete);
+            return "File deleted: " + fileName;
+        }
+    }
+
+    //This is a higher level of delete that over writes system created files ONLY USE WHEN NEED!
+    public string PowerDeleteFile(string fileName)
+    {
+        var fileToDelete = files.FirstOrDefault(f => f.Name == fileName);
+        if (fileToDelete == null)
+        {
+            return "File not found: " + fileName;
         }
         else
         {

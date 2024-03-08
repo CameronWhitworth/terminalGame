@@ -36,7 +36,10 @@ public class CommandRegistry
         commands.Add("whereami", new PwdCommand());
         commands.Add("pwd", new PwdCommand());
         commands.Add("calc", new CalcCommand());
-        commands.Add("cp", new CopyCommand());
+        commands.Add("cp", new FileMovementCommand());
+        commands.Add("copy", new FileMovementCommand());
+        commands.Add("mv", new FileMovementCommand());
+        commands.Add("move", new FileMovementCommand());
     }
 
     public ICommand GetCommand(string commandName)

@@ -214,8 +214,7 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
     {
         // If textsize changing is added this function cant be static
         // Return the estimated max number of characters per line
-        // This will need adjustment based on your UI setup
-        return 80; // Example value, adjust as necessary
+        return 80; // Adjust as necessary
     }
 
     void Update()
