@@ -13,7 +13,7 @@ public class GrepCommand : ICommand
 
         if (args.Length < 3)
         {
-            response.Add("Usage: grep [options] \"pattern\" <file> <optionalFile2> <optionalFile3> ...");
+            response.Add("Usage: grep [options] \"pattern\" <file> [<file2> ...]");
             return response;
         }
 
@@ -21,6 +21,8 @@ public class GrepCommand : ICommand
         bool caseInsensitive = false;
         bool includeLineNumbers = false;
         bool includeByteOffset = false;
+        bool countMatches = false;
+        bool invertMatch = false;
         string pattern = string.Empty;
         List<string> fileNames = new List<string>();
 
@@ -37,6 +39,12 @@ public class GrepCommand : ICommand
                     break;
                 case "-b":
                     includeByteOffset = true;
+                    break;
+                case "-c":
+                    countMatches = true;
+                    break;
+                case "-v":
+                    invertMatch = true;
                     break;
                 default:
                     if (string.IsNullOrEmpty(pattern) && (args[i].StartsWith("\"") || args[i].StartsWith("'")))
@@ -77,28 +85,38 @@ public class GrepCommand : ICommand
 
             string[] lines = fileMetadata.Content.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
             int byteOffset = 0;
-            bool matchFound = false;
+            int matchCount = 0;
             for (int lineIndex = 0; lineIndex < lines.Length; lineIndex++)
             {
-                if (Regex.IsMatch(lines[lineIndex], pattern, options))
+                bool match = Regex.IsMatch(lines[lineIndex], pattern, options);
+                if (invertMatch) match = !match;
+
+                if (match)
                 {
-                    StringBuilder output = new StringBuilder();
-                    if (includeByteOffset)
+                    matchCount++;
+                    if (!countMatches)
                     {
-                        output.Append($"{byteOffset}:");
+                        StringBuilder output = new StringBuilder();
+                        if (includeByteOffset)
+                        {
+                            output.Append($"{byteOffset}:");
+                        }
+                        if (includeLineNumbers)
+                        {
+                            output.Append($"{lineIndex + 1}:");
+                        }
+                        output.Append(lines[lineIndex]);
+                        response.Add(output.ToString());
                     }
-                    if (includeLineNumbers)
-                    {
-                        output.Append($"{lineIndex + 1}:");
-                    }
-                    output.Append(lines[lineIndex]);
-                    response.Add(output.ToString());
-                    matchFound = true;
                 }
                 byteOffset += Encoding.UTF8.GetByteCount(lines[lineIndex] + "\n");
             }
 
-            if (!matchFound)
+            if (countMatches)
+            {
+                response.Add($"{fileName}: {matchCount}");
+            }
+            else if (matchCount == 0)
             {
                 response.Add($"No matches found in: {fileName}");
             }
