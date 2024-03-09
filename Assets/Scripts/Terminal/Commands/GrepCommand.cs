@@ -23,8 +23,11 @@ public class GrepCommand : ICommand
         bool includeByteOffset = false;
         bool countMatches = false;
         bool invertMatch = false;
+        bool includeFileName = false;
+        bool matchWholeWord = false; // New flag for whole word matching
         string pattern = string.Empty;
         List<string> fileNames = new List<string>();
+        int totalMatchCount = 0;
 
         // Process arguments to separate options, pattern, and filenames
         for (int i = 1; i < args.Length; i++)
@@ -46,6 +49,12 @@ public class GrepCommand : ICommand
                 case "-v":
                     invertMatch = true;
                     break;
+                case "-H":
+                    includeFileName = true;
+                    break;
+                case "-w":
+                    matchWholeWord = true; // Process whole word match flag
+                    break;
                 default:
                     if (string.IsNullOrEmpty(pattern) && (args[i].StartsWith("\"") || args[i].StartsWith("'")))
                     {
@@ -59,28 +68,37 @@ public class GrepCommand : ICommand
             }
         }
 
-        // Check if pattern was set
         if (string.IsNullOrEmpty(pattern))
         {
             response.Add("Pattern not specified correctly.");
             return response;
         }
 
-        // Regex options
+        // Modify pattern for whole word match if -w flag is set
+        if (matchWholeWord)
+        {
+            pattern = @"\b" + Regex.Escape(pattern) + @"\b";
+        }
+
         RegexOptions options = RegexOptions.None;
         if (caseInsensitive)
         {
             options |= RegexOptions.IgnoreCase;
         }
 
-        // Iterate over each file name provided
         foreach (string fileName in fileNames)
         {
             FileMetadata fileMetadata = terminalManager.GetCurrentDirectory().GetFileMetadata(fileName);
             if (fileMetadata == null)
             {
                 response.Add($"File not found: {fileName}");
-                continue; // Skip to the next file
+                continue;
+            }
+
+            if (fileMetadata.IsPasswordProtected)
+            {
+                response.Add($"Error: file {fileName} has password protection. Remove password from file to perform Grep command.");
+                continue;
             }
 
             string[] lines = fileMetadata.Content.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
@@ -88,15 +106,19 @@ public class GrepCommand : ICommand
             int matchCount = 0;
             for (int lineIndex = 0; lineIndex < lines.Length; lineIndex++)
             {
-                bool match = Regex.IsMatch(lines[lineIndex], pattern, options);
-                if (invertMatch) match = !match;
+                bool isMatch = Regex.IsMatch(lines[lineIndex], pattern, options);
+                if (invertMatch) isMatch = !isMatch;
 
-                if (match)
+                if (isMatch)
                 {
                     matchCount++;
                     if (!countMatches)
                     {
                         StringBuilder output = new StringBuilder();
+                        if (includeFileName)
+                        {
+                            output.Append($"{fileName}:");
+                        }
                         if (includeByteOffset)
                         {
                             output.Append($"{byteOffset}:");
@@ -114,12 +136,16 @@ public class GrepCommand : ICommand
 
             if (countMatches)
             {
-                response.Add($"{fileName}: {matchCount}");
+                totalMatchCount += matchCount;
             }
-            else if (matchCount == 0)
+            else if (matchCount == 0 && !countMatches)
             {
                 response.Add($"No matches found in: {fileName}");
             }
+        }
+        if (countMatches)
+        {
+            response.Add($"{totalMatchCount}"); // Add total match count to the response
         }
 
         return response;
