@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class PasswordCommand : ICommand
 {
-    public List<string> Execute(string[] args, TerminalManager terminalManager)
+    public List<string> Execute(string[] args, TerminalManager terminalManager, List<string> previousOutput = null)
     {
         if (args.Length >= 2)
         {

@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 
 public class CalcCommand : ICommand
 {
-    public List<string> Execute(string[] args, TerminalManager terminalManager)
+    public List<string> Execute(string[] args, TerminalManager terminalManager, List<string> previousOutput = null)
     {
         // Combine all arguments after the command into a single string
         string expression = string.Join(" ", args, 1, args.Length - 1);

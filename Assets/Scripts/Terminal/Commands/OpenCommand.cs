@@ -6,7 +6,7 @@ using UnityEngine;
 using System.IO;
 public class OpenCommand : ICommand
 {
-    public List<string> Execute(string[] args, TerminalManager terminalManager)
+    public List<string> Execute(string[] args, TerminalManager terminalManager, List<string> previousOutput = null)
     {
         if (args.Length > 1)
         {
@@ -52,7 +52,7 @@ public class OpenCommand : ICommand
         }
         else
         {
-            terminalManager.StartCoroutine(terminalManager.AddLinesWithDelay(new List<string> { "ERROR: File name not specified" }));    
+            terminalManager.StartCoroutine(terminalManager.AddLinesWithDelay(new List<string> { "ERROR: File name not specified" }));
         }
         return new List<string>(); // The actual output is handled asynchronously
 

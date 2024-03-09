@@ -151,6 +151,27 @@ public class Directory
             files.Add(newFile);
         }
     }
+
+    //piping method
+    public string WriteToFile(string fileName, string content)
+    {
+        // Ensure the fileName has the correct extension for consistency
+        if (!fileName.EndsWith(".txt"))
+        {
+            fileName += ".txt";
+        }
+
+        // Check if the file already exists
+        if (FileExists(fileName))
+        {
+            return "File already exists: " + fileName + ". Use a different name or delete the existing file first.";
+        }
+
+        // Create a new file with the given content
+        CreateFileWithContent(fileName, true, content);
+        return "Output written to: " + fileName;
+    }
+
     // Method to check if a file exists in the current directory
     public bool FileExists(string fileName)
     {

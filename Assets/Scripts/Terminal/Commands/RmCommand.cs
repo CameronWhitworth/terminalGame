@@ -5,7 +5,7 @@ using UnityEngine;
 public class RmCommand : ICommand
 {
     // Start is called before the first frame update
-    public List<string> Execute(string[] args, TerminalManager terminalManager)
+    public List<string> Execute(string[] args, TerminalManager terminalManager, List<string> previousOutput = null)
     {
         List<string> response = new List<string>();
         string fileResponse = "";

@@ -32,11 +32,11 @@ public class ManCommand : ICommand
         };
     }
 
-    public List<string> Execute(string[] args, TerminalManager terminalManager)
+    public List<string> Execute(string[] args, TerminalManager terminalManager, List<string> previousOutput = null)
     {
         List<string> response = new List<string>();
 
-        if (args.Length <= 1) 
+        if (args.Length <= 1)
         {
             response.AddRange(FormatManualEntry("Usage: man <command>\nDescription: Displays the manual page for <command>. Provide a command name to get its usage and description.", terminalManager));
             return response;
