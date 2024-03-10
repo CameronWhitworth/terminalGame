@@ -6,6 +6,7 @@ using UnityEngine;
 
 public class EchoCommand : ICommand
 {
+    public int MaxArguments => 100; 
     public List<string> Execute(string[] args, TerminalManager terminalManager, List<string> previousOutput = null)
     {
         List<string> response = new List<string>();

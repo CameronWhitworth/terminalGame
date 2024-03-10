@@ -30,8 +30,17 @@ public class Interpreter : MonoBehaviour
         {
             var parts = userInput.Split(new[] {'>'}, 2);
             userInput = parts[0].Trim();
-            fileName = parts[1].Trim();
-            isRedirectingOutput = true;
+            var fileNameParts = parts[1].Trim().Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries);
+            
+            if (fileNameParts.Length == 1)
+            {
+                fileName = fileNameParts[0];
+                isRedirectingOutput = true;
+            }
+            else
+            {
+                return new List<string> { "ERROR: Too many arguments after redirection operator '>'" };
+            }
         }
 
         // Split the userInput into separate commands based on the pipe symbol
@@ -54,6 +63,10 @@ public class Interpreter : MonoBehaviour
             ICommand command = commandRegistry.GetCommand(commandName);
             if (command != null)
             {
+                if (args.Length > command.MaxArguments)
+                {
+                    return new List<string> { "ERROR: Too many arguments for command '" + commandName + "'" };
+                }
                 previousCommandOutput = command.Execute(args, terminalManager, previousCommandOutput);
 
                 // If there's another command in the pipeline, strip rich text tags from the output

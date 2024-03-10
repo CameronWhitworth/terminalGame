@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class LsCommand : ICommand
 {
+    public int MaxArguments => 1; 
     public List<string> Execute(string[] args, TerminalManager terminalManager, List<string> previousOutput = null)
     {
         List<string> response = new List<string>();
@@ -13,7 +14,7 @@ public class LsCommand : ICommand
         foreach (var dir in currentDirectory.subDirectories)
         {
             string directoryColor = themeManager.GetColor("directory");
-            response.Add(ColorString("/" + dir.name, directoryColor));
+            response.Add(ColorString(dir.name + "/", directoryColor));
         }
 
         foreach (var file in currentDirectory.files)

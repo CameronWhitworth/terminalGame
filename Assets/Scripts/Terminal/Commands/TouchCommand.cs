@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class TouchCommand : ICommand
 {
+    public int MaxArguments => 2; 
     public List<string> Execute(string[] args, TerminalManager terminalManager, List<string> previousOutput = null)
     {
         List<string> response = new List<string>();

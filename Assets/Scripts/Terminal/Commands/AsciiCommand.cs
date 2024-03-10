@@ -6,6 +6,7 @@ using UnityEngine;
 using System.IO;
 public class AsciiCommand : ICommand
 {
+    public int MaxArguments => 1; 
     List<string> response = new List<string>();
     public List<string> Execute(string[] args, TerminalManager terminalManager, List<string> previousOutput = null)
     {

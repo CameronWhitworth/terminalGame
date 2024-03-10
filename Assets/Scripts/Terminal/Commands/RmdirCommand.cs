@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class RmdirCommand : ICommand
 {
+    public int MaxArguments => 2; 
     // Start is called before the first frame update
     public List<string> Execute(string[] args, TerminalManager terminalManager, List<string> previousOutput = null)
     {

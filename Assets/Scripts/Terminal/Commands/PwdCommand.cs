@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class PwdCommand : ICommand
 {
+    public int MaxArguments => 1; 
     public List<string> Execute(string[] args, TerminalManager terminalManager, List<string> previousOutput = null)
     {
         List<string> response = new List<string>();

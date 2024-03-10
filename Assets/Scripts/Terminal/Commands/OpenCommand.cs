@@ -6,6 +6,7 @@ using UnityEngine;
 using System.IO;
 public class OpenCommand : ICommand
 {
+    public int MaxArguments => 2; 
     public List<string> Execute(string[] args, TerminalManager terminalManager, List<string> previousOutput = null)
     {
         if (args.Length > 1)

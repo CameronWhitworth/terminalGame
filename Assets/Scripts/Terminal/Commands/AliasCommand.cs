@@ -6,6 +6,7 @@ using UnityEngine;
 
 public class AliasCommand : ICommand
 {
+    public int MaxArguments => 5; 
     public List<string> Execute(string[] args, TerminalManager terminalManager, List<string> previousOutput = null)
     {
         List<string> response = new List<string>();

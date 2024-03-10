@@ -6,6 +6,7 @@ using UnityEngine;
 
 public class ManCommand : ICommand
 {
+    public int MaxArguments => 2; 
     private Dictionary<string, string> commandManuals;
 
     public ManCommand()

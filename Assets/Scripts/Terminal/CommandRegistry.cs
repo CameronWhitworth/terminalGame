@@ -41,6 +41,7 @@ public class CommandRegistry
         commands.Add("mv", new FileMovementCommand());
         commands.Add("move", new FileMovementCommand());
         commands.Add("grep", new GrepCommand());
+        commands.Add("sort", new SortCommand());
     }
 
     public ICommand GetCommand(string commandName)

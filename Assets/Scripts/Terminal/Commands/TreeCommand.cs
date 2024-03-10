@@ -8,6 +8,7 @@ using UnityEngine;
 
 public class TreeCommand : ICommand
 {
+    public int MaxArguments => 1; 
     public List<string> Execute(string[] args, TerminalManager terminalManager, List<string> previousOutput = null)
     {
         List<string> response = new List<string>();
