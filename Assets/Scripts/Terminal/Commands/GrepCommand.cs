@@ -7,11 +7,13 @@ using System.Text.RegularExpressions;
 
 public class GrepCommand : ICommand
 {
-    public List<string> Execute(string[] args, TerminalManager terminalManager)
+    public int MaxArguments => 10; 
+    public List<string> Execute(string[] args, TerminalManager terminalManager, List<string> previousOutput = null)
     {
         List<string> response = new List<string>();
 
-        if (args.Length < 3)
+        // Adjust the condition to account for when previousOutput is provided
+        if (args.Length < 2 && previousOutput == null)
         {
             response.Add("Usage: grep [options] \"pattern\" <file> [<file2> ...]");
             return response;
@@ -53,16 +55,20 @@ public class GrepCommand : ICommand
                     includeFileName = true;
                     break;
                 case "-w":
-                    matchWholeWord = true; // Process whole word match flag
+                    matchWholeWord = true;
                     break;
                 default:
-                    if (string.IsNullOrEmpty(pattern) && (args[i].StartsWith("\"") || args[i].StartsWith("'")))
+                    if (string.IsNullOrEmpty(pattern))
                     {
                         pattern = args[i].Trim('\'', '"');
                     }
                     else
                     {
-                        fileNames.Add(args[i]);
+                        // Only add to filenames if there's no previous output
+                        if (previousOutput == null)
+                        {
+                            fileNames.Add(args[i]);
+                        }
                     }
                     break;
             }
@@ -74,80 +80,97 @@ public class GrepCommand : ICommand
             return response;
         }
 
-        // Modify pattern for whole word match if -w flag is set
-        if (matchWholeWord)
-        {
-            pattern = @"\b" + Regex.Escape(pattern) + @"\b";
-        }
-
         RegexOptions options = RegexOptions.None;
         if (caseInsensitive)
         {
             options |= RegexOptions.IgnoreCase;
         }
 
-        foreach (string fileName in fileNames)
+        // Modify pattern for whole word match if -w flag is set
+        if (matchWholeWord)
         {
-            FileMetadata fileMetadata = terminalManager.GetCurrentDirectory().GetFileMetadata(fileName);
-            if (fileMetadata == null)
-            {
-                response.Add($"File not found: {fileName}");
-                continue;
-            }
+            pattern = @"\b" + Regex.Escape(pattern) + @"\b";
+        }
 
-            if (fileMetadata.IsPasswordProtected)
+        // Use previousOutput if available, else read from files
+        if (previousOutput != null)
+        {
+            // Handle the output from a previous command
+            ProcessLines(previousOutput.ToArray(), response, options, pattern, includeFileName: false, includeLineNumbers, includeByteOffset, countMatches, invertMatch, ref totalMatchCount);
+        }
+        else
+        {
+            // Original file processing logic here, modified to use a helper method for processing lines
+            foreach (string fileName in fileNames)
             {
-                response.Add($"Error: file {fileName} has password protection. Remove password from file to perform Grep command.");
-                continue;
-            }
-
-            string[] lines = fileMetadata.Content.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
-            int byteOffset = 0;
-            int matchCount = 0;
-            for (int lineIndex = 0; lineIndex < lines.Length; lineIndex++)
-            {
-                bool isMatch = Regex.IsMatch(lines[lineIndex], pattern, options);
-                if (invertMatch) isMatch = !isMatch;
-
-                if (isMatch)
+                FileMetadata fileMetadata = terminalManager.GetCurrentDirectory().GetFileMetadata(fileName);
+                if (fileMetadata == null)
                 {
-                    matchCount++;
-                    if (!countMatches)
-                    {
-                        StringBuilder output = new StringBuilder();
-                        if (includeFileName)
-                        {
-                            output.Append($"{fileName}:");
-                        }
-                        if (includeByteOffset)
-                        {
-                            output.Append($"{byteOffset}:");
-                        }
-                        if (includeLineNumbers)
-                        {
-                            output.Append($"{lineIndex + 1}:");
-                        }
-                        output.Append(lines[lineIndex]);
-                        response.Add(output.ToString());
-                    }
+                    response.Add($"File not found: {fileName}");
+                    continue;
                 }
-                byteOffset += Encoding.UTF8.GetByteCount(lines[lineIndex] + "\n");
-            }
 
-            if (countMatches)
-            {
-                totalMatchCount += matchCount;
-            }
-            else if (matchCount == 0 && !countMatches)
-            {
-                response.Add($"No matches found in: {fileName}");
+                if (fileMetadata.IsPasswordProtected)
+                {
+                    response.Add($"Error: file {fileName} is password protected. Remove password to perform grep.");
+                    continue;
+                }
+
+                string[] lines = fileMetadata.Content.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+                ProcessLines(lines, response, options, pattern, includeFileName, includeLineNumbers, includeByteOffset, countMatches, invertMatch, ref totalMatchCount, fileName);
             }
         }
+
         if (countMatches)
         {
-            response.Add($"{totalMatchCount}"); // Add total match count to the response
+            response.Add($"{totalMatchCount}");
         }
 
         return response;
+    }
+
+    private void ProcessLines(string[] lines, List<string> response, RegexOptions options, string pattern, bool includeFileName, bool includeLineNumbers, bool includeByteOffset, bool countMatches, bool invertMatch, ref int totalMatchCount, string fileName = null)
+    {
+        int byteOffset = 0;
+        int matchCount = 0;
+
+        for (int lineIndex = 0; lineIndex < lines.Length; lineIndex++)
+        {
+            bool isMatch = Regex.IsMatch(lines[lineIndex], pattern, options);
+            if (invertMatch) isMatch = !isMatch;
+
+            if (isMatch)
+            {
+                matchCount++;
+                if (!countMatches)
+                {
+                    StringBuilder output = new StringBuilder();
+                    if (includeFileName && fileName != null)
+                    {
+                        output.Append($"{fileName}:");
+                    }
+                    if (includeByteOffset)
+                    {
+                        output.Append($"{byteOffset}:");
+                    }
+                    if (includeLineNumbers)
+                    {
+                        output.Append($"{lineIndex + 1}:");
+                    }
+                    output.Append(lines[lineIndex]);
+                    response.Add(output.ToString());
+                }
+            }
+            byteOffset += Encoding.UTF8.GetByteCount(lines[lineIndex] + "\n");
+        }
+
+        if (countMatches)
+        {
+            totalMatchCount += matchCount;
+        }
+        else if (matchCount == 0 && !countMatches)
+        {
+            response.Add($"No matches found in: {fileName}");
+        }
     }
 }

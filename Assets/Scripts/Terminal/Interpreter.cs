@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using System.IO;
+using System.Text.RegularExpressions;
 
 public class Interpreter : MonoBehaviour
 {
@@ -20,38 +21,93 @@ public class Interpreter : MonoBehaviour
     public List<string> Interpret(string userInput)
     {
         response.Clear();
-        string[] args = userInput.Split();
-        string commandName = args[0];
 
-        // Check for alias
-        string aliasCommand;
-        if (terminalManager.GetCurrentDirectory().aliases.TryGetValue(commandName, out aliasCommand))
-        {
-            // If found, parse the alias command as if it was the user input
-            args = aliasCommand.Split();
-            commandName = args[0]; // Update commandName with the actual command from the alias
-        }
+        string fileName = null;
+        bool isRedirectingOutput = false;
 
-        ICommand command = commandRegistry.GetCommand(commandName);
-        if (command != null)
+        // Check for output redirection in the userInput
+        if (userInput.Contains(">"))
         {
-            return command.Execute(args, terminalManager);
-        }
-        else
-        {
-            // Suggest a similar command if available
-            string suggestion = SuggestSimilarCommand(commandName);
-            if (suggestion != null)
+            var parts = userInput.Split(new[] {'>'}, 2);
+            userInput = parts[0].Trim();
+            var fileNameParts = parts[1].Trim().Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries);
+            
+            if (fileNameParts.Length == 1)
             {
-                response.Add($"ERROR: Unknown command '{commandName}'. Did you mean '{suggestion}'?");
-                response.Add("Type 'help' for a list of commands.");
+                fileName = fileNameParts[0];
+                isRedirectingOutput = true;
             }
             else
             {
-                response.Add("ERROR: Unknown command. Type 'help' for a list of commands.");
+                return new List<string> { "ERROR: Too many arguments after redirection operator '>'" };
             }
-            return response;
         }
+
+        // Split the userInput into separate commands based on the pipe symbol
+        var commandParts = userInput.Split('|').Select(part => part.Trim()).ToArray();
+        List<string> previousCommandOutput = null;
+
+        foreach (var part in commandParts)
+        {
+            string[] args = part.Split();
+            string commandName = args[0];
+
+            // Check for alias
+            string aliasCommand;
+            if (terminalManager.GetCurrentDirectory().aliases.TryGetValue(commandName, out aliasCommand))
+            {
+                args = aliasCommand.Split();
+                commandName = args[0];
+            }
+
+            ICommand command = commandRegistry.GetCommand(commandName);
+            if (command != null)
+            {
+                if (args.Length > command.MaxArguments)
+                {
+                    return new List<string> { "ERROR: Too many arguments for command '" + commandName + "'" };
+                }
+                previousCommandOutput = command.Execute(args, terminalManager, previousCommandOutput);
+
+                // If there's another command in the pipeline, strip rich text tags from the output
+                if (commandParts.Length > 1)
+                {
+                    previousCommandOutput = previousCommandOutput.Select(line => StripRichTextTags(line)).ToList();
+                }
+            }
+            else
+            {
+                string suggestion = SuggestSimilarCommand(commandName);
+                if (suggestion != null)
+                {
+                    response.Add($"ERROR: Unknown command '{commandName}'. Did you mean '{suggestion}'?");
+                }
+                else
+                {
+                    response.Add($"ERROR: Unknown command '{commandName}'.");
+                }
+                response.Add("Type 'help' for a list of commands.");
+                return response;
+            }
+        }
+
+        // Handle output redirection if a file name was provided
+        if (isRedirectingOutput && !string.IsNullOrEmpty(fileName))
+        {
+            // If output redirection is used, strip rich text tags from the output
+            var plainTextOutput = previousCommandOutput.Select(line => StripRichTextTags(line)).ToList();
+            var writeResult = terminalManager.GetCurrentDirectory().WriteToFile(fileName, string.Join("\n", plainTextOutput));
+            return new List<string> {writeResult};
+        }
+
+        // The output of the last command in the pipeline is the final response
+        return previousCommandOutput ?? new List<string> {"ERROR: Command pipeline execution failed."};
+    }
+
+    private string StripRichTextTags(string input)
+    {
+        // Regex to find and remove any rich text tags
+        return Regex.Replace(input, "<.*?>", string.Empty);
     }
 
 

@@ -5,7 +5,8 @@ using UnityEngine;
 
 public class FileMovementCommand : ICommand
 {
-    public List<string> Execute(string[] args, TerminalManager terminalManager)
+    public int MaxArguments => 3; 
+    public List<string> Execute(string[] args, TerminalManager terminalManager, List<string> previousOutput = null)
     {
         List<string> response = new List<string>();
 

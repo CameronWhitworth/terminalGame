@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class MkdirCommand : ICommand
 {
-    public List<string> Execute(string[] args, TerminalManager terminalManager)
+    public int MaxArguments => 2; 
+    public List<string> Execute(string[] args, TerminalManager terminalManager, List<string> previousOutput = null)
     {
         List<string> response = new List<string>();
         string dirResponse = "";

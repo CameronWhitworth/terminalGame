@@ -6,11 +6,24 @@ using UnityEngine;
 
 public class EchoCommand : ICommand
 {
-    public List<string> Execute(string[] args, TerminalManager terminalManager)
+    public int MaxArguments => 100; 
+    public List<string> Execute(string[] args, TerminalManager terminalManager, List<string> previousOutput = null)
     {
         List<string> response = new List<string>();
-        string echoedText = string.Join(" ", args.Skip(1));
-        response.Add(echoedText);
+
+        // If there's previous output, echo that instead of the arguments.
+        if (previousOutput != null && previousOutput.Count > 0)
+        {
+            response.Add("foobar");
+            response.AddRange(previousOutput);
+            
+        }
+        else
+        {
+            string echoedText = string.Join(" ", args.Skip(1));
+            response.Add(echoedText);
+        }
+        
         return response;
     }
 }

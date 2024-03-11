@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class HelpCommand : ICommand
 {
-    public List<string> Execute(string[] args, TerminalManager terminalManager)
-    {
+    public int MaxArguments => 1; 
+    public List<string> Execute(string[] args, TerminalManager terminalManager, List<string> previousOutput = null)    {
         List<string> response = new List<string>();
         ThemeManager themeManager = terminalManager.GetThemeManager(); // Access the ThemeManager
 

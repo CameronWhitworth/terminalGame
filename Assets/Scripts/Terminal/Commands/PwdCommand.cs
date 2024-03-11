@@ -4,22 +4,23 @@ using UnityEngine;
 
 public class PwdCommand : ICommand
 {
-    public List<string> Execute(string[] args, TerminalManager terminalManager)
+    public int MaxArguments => 1; 
+    public List<string> Execute(string[] args, TerminalManager terminalManager, List<string> previousOutput = null)
     {
         List<string> response = new List<string>();
-        
+
         // Get the current directory from the terminal manager
         Directory currentDirectory = terminalManager.GetCurrentDirectory();
-        
+
         // Build the full path of the current directory
         string fullPath = BuildFullPath(currentDirectory);
-        
+
         // Add the full path to the response
         response.Add(fullPath);
-        
+
         return response;
     }
-    
+
     private string BuildFullPath(Directory directory)
     {
         // Recursive function to construct the full path from the root to the current directory
