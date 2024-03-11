@@ -9,7 +9,13 @@ public class UniqCommand : ICommand
     public List<string> Execute(string[] args, TerminalManager terminalManager, List<string> previousOutput = null)
     {
         List<string> response = new List<string>();
+
+        // Parse options
         bool countOccurrences = args.Contains("-c");
+        bool caseInsensitive = args.Contains("-i");
+        bool printDuplicatesOnly = args.Contains("-d");
+        bool printUniquesOnly = args.Contains("-u");
+
         List<string> linesToProcess = new List<string>();
 
         if (previousOutput != null && previousOutput.Any())
@@ -20,11 +26,6 @@ public class UniqCommand : ICommand
         {
             // When input is not piped, but a file is specified
             string fileName = args[1];
-            if (!fileName.EndsWith(".txt"))
-            {
-                fileName += ".txt";
-            }
-
             var fileContent = terminalManager.GetCurrentDirectory().ReadFile(fileName);
             if (fileContent != null)
             {
@@ -38,14 +39,17 @@ public class UniqCommand : ICommand
             }
         }
 
-        // Processing lines to implement uniq functionality
+        // Processing lines
         string lastLine = null;
         int occurrenceCount = 0;
         foreach (var line in linesToProcess)
         {
-            if (line != lastLine)
+            string currentLine = caseInsensitive ? line.ToLower() : line;
+            string compareLine = caseInsensitive ? (lastLine?.ToLower()) : lastLine;
+
+            if (currentLine != compareLine)
             {
-                if (lastLine != null)
+                if (lastLine != null && (!printUniquesOnly || occurrenceCount == 1) && (!printDuplicatesOnly || occurrenceCount > 1))
                 {
                     if (countOccurrences)
                     {
@@ -65,8 +69,8 @@ public class UniqCommand : ICommand
             }
         }
 
-        // Ensure the last line is processed
-        if (lastLine != null)
+        // Ensure the last line is processed correctly
+        if (lastLine != null && (!printUniquesOnly || occurrenceCount == 1) && (!printDuplicatesOnly || occurrenceCount > 1))
         {
             if (countOccurrences)
             {
