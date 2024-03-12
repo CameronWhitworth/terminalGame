@@ -397,18 +397,6 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
 
     public void ClearScreen()
     {
-        // Calculate the total height of existing lines
-        float totalHeight = 0f;
-        foreach (Transform child in msgList.transform)
-        {
-            totalHeight += child.GetComponent<RectTransform>().rect.height;
-        }
-
-        // Reset the position of the existing userInputLine below the existing lines
-        float newLineHeight = userInputLine.GetComponent<RectTransform>().rect.height;
-        float newYPosition = -totalHeight - newLineHeight;
-        userInputLine.transform.localPosition = new Vector3(0f, newYPosition, 0f);
-
         // Destroy all child objects of msgList except the userInputLine
         foreach (Transform child in msgList.transform)
         {
@@ -418,8 +406,8 @@ public class TerminalManager : MonoBehaviour, IPointerClickHandler
             }
         }
 
-        // Reset the size of msgList
-        msgList.GetComponent<RectTransform>().sizeDelta = new Vector2(0, 0);
+        // Reset the size of msgList to reflect the CommandLineContainer height
+        msgList.GetComponent<RectTransform>().sizeDelta = new Vector2(msgList.GetComponent<RectTransform>().sizeDelta.x, 40.0f);
 
         // Ensure that the ScrollRect content is still set
         ScrollRect scrollRect = sr.GetComponent<ScrollRect>();

@@ -45,6 +45,7 @@ public class CommandRegistry
         commands.Add("uniq", new UniqCommand());
         commands.Add("diff", new DiffCommand());
         commands.Add("wc", new WcCommand());
+        commands.Add("clear", new ClearCommand());
     }
 
     public ICommand GetCommand(string commandName)
