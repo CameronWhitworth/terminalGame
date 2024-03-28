@@ -9,6 +9,7 @@ Shader "Custom/CRTShaderWithTerminalEffects"
         _ScanlineSpeed ("Scanline Speed", Float) = 1.0
         _ScanlineAmount ("Scanline Amount", Float) = 100.0
         _ScanlineIntensity ("Scanline Intensity", Float) = 0.5
+        _NoiseIntensity ("Noise Intensity", Float) = 0.5
         
     }
     SubShader
@@ -43,6 +44,7 @@ Shader "Custom/CRTShaderWithTerminalEffects"
             float _ScanlineSpeed;
             float _ScanlineAmount;
             float _ScanlineIntensity;
+            float _NoiseIntensity;
 
             v2f vert (appdata v)
             {
@@ -52,11 +54,20 @@ Shader "Custom/CRTShaderWithTerminalEffects"
                 return o;
             }
 
+            float rand(float2 co)
+            {
+                return frac(sin(dot(co.xy, float2(12.9898,78.233))) * 43758.5453);
+            }
+
             float4 frag (v2f i) : SV_Target
             {
                 float4 tex = tex2D(_MainTex, i.uv);
                 float flicker = sin(_Time.y * _FlickerFrequency) * 0.1 + 0.9;
-                
+
+                // Generate noise
+                float noise = rand(i.uv + _Time.y); // Use the custom rand function
+                tex.rgb += _NoiseIntensity * (noise - 0.5);
+
                 // Enhanced ghosting effect
                 float ghostOffset1 = sin(_Time.y * 2.0) * _GhostingAmount * 0.5;
                 float ghostOffset2 = cos(_Time.y * 3.0) * _GhostingAmount;

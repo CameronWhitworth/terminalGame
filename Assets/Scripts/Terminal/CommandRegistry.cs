@@ -46,6 +46,7 @@ public class CommandRegistry
         commands.Add("diff", new DiffCommand());
         commands.Add("wc", new WcCommand());
         commands.Add("clear", new ClearCommand());
+        commands.Add("boobies", new BoobCommand());
     }
 
     public ICommand GetCommand(string commandName)

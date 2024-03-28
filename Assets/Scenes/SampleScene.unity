@@ -8466,6 +8466,7 @@ MonoBehaviour:
   scanlineSpeed: 1.5
   scanlineAmount: 115
   scanlineIntensity: 0.017
+  noiseIntensity: 0.026
 --- !u!224 &2091414802 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 5810587966437748551, guid: 001d24acf510e0146b5e9c82d423909b, type: 3}

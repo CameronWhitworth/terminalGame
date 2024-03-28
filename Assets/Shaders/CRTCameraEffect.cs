@@ -26,6 +26,10 @@ public class CRTCameraEffect : MonoBehaviour
     [SerializeField, Range(0f, 0.2f)]
     private float scanlineIntensity = 0.1f;
 
+    [SerializeField, Range(0f, 1f)]
+    private float noiseIntensity = 0.1f;
+
+
 
     
     void Start()
@@ -51,6 +55,7 @@ public class CRTCameraEffect : MonoBehaviour
             crtMaterial.SetFloat("_ScanlineSpeed", scanlineSpeed);
             crtMaterial.SetFloat("_ScanlineAmount", scanlineAmount);
             crtMaterial.SetFloat("_ScanlineIntensity", scanlineIntensity);
+            crtMaterial.SetFloat("_NoiseIntensity", noiseIntensity);
         }
     }
 
